@@ -1,0 +1,8 @@
+Por enquanto, o que tem aqui é a implementação apenas do modelo híbrido GARCH-LSTM; 
+
+No momento, a rede LSTM foi construída só para eu testar a integração, ainda não construí uma estrutura interessante para fins preditivos.
+
+Além disso, eu tentei implementar a rede LSTM muitas vezes no R, mas tive algum problema com ambiente virtual que não soube arrumar. Aí implementei a LSTM no Python. A ideia é tentar implementar a rede dentro do R mesmo, uma vez que os modelos MSGARCH e GAS estão já implementados.
+
+Por fim, só tem o modelo GARCH-LSTM pq eu não consegui de jeito nenhum fazer as predições usando o MSGARCH.
+ 
