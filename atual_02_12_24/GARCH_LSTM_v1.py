@@ -28,8 +28,7 @@ n_timesteps = 100
 X = []
 y = []
 
-
-# O objetivo é treinar a LSTM para prever as volatilidades futuras com base nas previsões passadas
+# Ajustando o formato dos dados
 for i in range(n_timesteps, len(lstm_data)):
     X.append(lstm_data.iloc[i - n_timesteps:i, 1:].values)  # Usando a coluna "Volatility" como entrada
     y.append(lstm_data.iloc[i, 1])  # Previsão da volatilidade para o próximo dia
