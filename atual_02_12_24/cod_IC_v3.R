@@ -14,7 +14,7 @@ setwd("C:/Users/vinic/OneDrive/Área de Trabalho/Estudos/IC/Codes")
 df <- read.csv("BTCUSDT_1d.csv") # período 17/08/2017 até 31/10/2024
 df %<>% select(-`NA.`)
 
-d1 <- df %>% select(OpenTime, Close) # considerando só fechamento
+d1 <- df %>% select(OpenTime, Close) # considerando só o fechamento
 
 plot(d1$Close, type = 'l')
 
@@ -40,8 +40,8 @@ n_windows <- n - window_size
 # Inicializar um vetor para armazenar as previsões de volatilidade
 predictions <- numeric(n_windows)
 
-# Vetor de datas para as previsões (considerando a data da última observação da janela)
-dates <- as.Date(d1$OpenTime[(window_size + 1):n])  # Ajuste conforme o formato de data em seu dataframe
+# Vetor de datas para as previsões 
+dates <- as.Date(d1$OpenTime[(window_size + 1):n])
 
 # Janela deslizante
 for (i in 1:n_windows) {
