@@ -1,0 +1,3 @@
+Nos arquivos CSV dos modelos híbridos, temos duas colunas: True Values e Predicted Values. No entanto, True Values são na verdade as previsões dos respectivos modelos econométricos.
+
+Por exemplo, no CSV do modelo GARCH-LSTM, a coluna True Value contém as previsões obtidas do modelo GARCH. O mesmo para os outros modelos.
