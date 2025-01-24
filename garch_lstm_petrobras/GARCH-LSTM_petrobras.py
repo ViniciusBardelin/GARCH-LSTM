@@ -167,3 +167,39 @@ plt.show()
 # Salvar o arquivo ajustado com datas
 # predictions_df.to_csv("predictions_garch_lstm_with_dates.csv", index=False)
 # print("Updated predictions with dates saved as 'predictions_garch_lstm_with_dates.csv'.")
+
+## Identificando eventos extremos
+
+# Carregar as previsões e as proxies (com datas)
+predictions_df = pd.read_csv("predictions_garch_lstm_with_dates.csv")
+proxy_data = pd.read_csv("petrobras_squared_returns.csv")
+
+# Filtrar apenas as colunas necessárias e garantir alinhamento
+proxy_data = proxy_data[["Date", "Squared_Returns"]]
+proxy_data["Date"] = pd.to_datetime(proxy_data["Date"])
+predictions_df["Date"] = pd.to_datetime(predictions_df["Date"])
+
+# Unir os dados de previsões e proxy
+merged_df = pd.merge(predictions_df, proxy_data, on="Date", how="inner")
+
+# Identificar limites extremos (95º percentil como exemplo)
+proxy_threshold = merged_df["Proxy Values"].quantile(0.95)
+predicted_threshold = merged_df["Predicted Values"].quantile(0.95)
+
+# Filtrar os dias extremos para a proxy e previsões
+extreme_proxy = merged_df[merged_df["Proxy Values"] > proxy_threshold]
+extreme_predictions = merged_df[merged_df["Predicted Values"] > predicted_threshold]
+
+# Dias de eventos extremos em ambos os casos
+extreme_events = pd.concat([extreme_proxy, extreme_predictions]).drop_duplicates()
+
+# Salvar os dias extremos em um arquivo CSV
+extreme_events.to_csv("extreme_events.csv", index=False)
+
+# Visualizar os resultados
+print("Extreme proxy values:")
+print(extreme_proxy)
+
+print("\nExtreme predicted values:")
+print(extreme_predictions)
+
