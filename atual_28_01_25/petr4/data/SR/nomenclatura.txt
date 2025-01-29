@@ -1,0 +1,1 @@
+todos os CSV dentro de SR são os outputs dos modelos GARCH-MSGARCH-GAS-LSTM treinados com a proxy dos retornos ao quadrado.
