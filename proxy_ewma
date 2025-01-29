@@ -1,0 +1,45 @@
+## Proxy: EWMA
+
+'''
+The Realized volatility, which measures the change in asset price
+during a given period, is calculated using a rolling exponential window
+approach of 252 days on the squared returns, which is then input into
+the hybrid deep learning model for forecasting future volatility. (Kakade et al. (2022)
+'''
+
+# Aqui no EWMA usei janelas de 1500 dias pois usei essa mesma configuração para ajustar os modelos GARCH, MSGARCH e GAS.
+
+library(xts)
+
+# Carregar os log-retornos ao quadrado
+df_returns <- read.csv("petrobras_squared_returns.csv")
+squared_returns <- df_returns$Squared_Returns
+dates <- as.Date(df_returns$Date)
+
+# Parâmetros EWMA
+lambda <- 0.94
+window_size <- 1500
+n <- length(squared_returns)
+n_windows <- n - window_size
+
+# Vetores para armazenar previsões e datas correspondentes
+ewma_predictions <- numeric(n_windows)
+dates_ewma <- dates[(window_size + 1):n]
+
+# Janela deslizante
+for (i in 1:n_windows) {
+  # Selecionar a janela atual de retornos ao quadrado
+  train_data <- squared_returns[i:(i + window_size - 1)]
+ 
+  # Calcular EWMA
+  weights <- lambda^(window_size:1)
+  weights <- weights / sum(weights)
+  ewma_predictions[i] <- sqrt(sum(weights * train_data))  # Volatilidade como raiz quadrada da média ponderada
+}
+
+# Gráfico das previsões
+plot(dates_ewma, ewma_predictions, type = "l", main = "Previsões de Volatilidade - EWMA", xlab = "Data", ylab = "Volatilidade")
+
+# Gerar CSV
+vol_forecasts_ewma <- xts(ewma_predictions, order.by = dates_ewma)
+write.zoo(vol_forecasts_ewma, file = "petr4_vol_forecasts_ewma.csv", sep = ",", col.names = TRUE)
