@@ -53,7 +53,7 @@ for (i in 1:n_windows) {
   
   forecast <- ugarchforecast(fit, n.ahead = 1)
   
-  garch_predictions[i] <- sqrt(forecast@forecast$sigmaFor)
+  garch_predictions[i] <- forecast@forecast$sigmaFor # Sigma já é a volatilidade, nao precisa de raiz
 }
 
 dates_garch <- as.Date(dates_garch)
