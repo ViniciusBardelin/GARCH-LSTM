@@ -26,9 +26,9 @@ df_returns <- data.frame(
 
 plot(df_returns$Date, df_returns$Returns, type = 'l')
 
-#--------------#
-# garch(1,1)-t #
-#--------------#
+#-------#
+# garch #
+#-------#
 
 garch_spec <- ugarchspec(
   variance.model = list(model = "sGARCH", garchOrder = c(1, 1)),
