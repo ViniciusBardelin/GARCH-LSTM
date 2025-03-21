@@ -6,7 +6,9 @@ library(xts)
 library(zoo)
 library(magrittr)
 
-## pre processing
+#----------------#
+# pre processing #
+#----------------#
 
 # data
 prices = read.csv('BTCUSDT_1d.csv')
@@ -26,9 +28,10 @@ df_returns <- data.frame(
 
 plot(df_returns$Date, df_returns$Returns, type = 'l')
 
-## models
+#--------------#
+# garch(1,1)-t #
+#--------------#
 
-# garch(1,1)-t model
 garch_spec <- ugarchspec(
   variance.model = list(model = "sGARCH", garchOrder = c(1, 1)),
   mean.model = list(armaOrder = c(0, 0), include.mean = FALSE),
@@ -59,40 +62,40 @@ for (i in 1:n_windows) {
   garch_predictions[i] <- sqrt(forecast@forecast$sigmaFor)
 }
 
-# Converter as datas para tipo date
+# converter as datas para tipo date
 dates_garch <- as.Date(dates_garch)
 
-# Plot
+# plot
 plot(dates_garch, garch_predictions, type = "l",
      main = "Volatility Forecasts - GARCH",
      xlab = "Date", ylab = "Volatility",
      col = "blue", lwd = 2)
 
-# Criar o objeto xts
+# criar o objeto xts
 vol_forecasts_garch <- xts(garch_predictions, order.by = dates_garch)
 colnames(vol_forecasts_garch) <- c("Forecasts")
 
 
-# Salvar o objeto xts como CSV
+# salvar o objeto como CSV
 write.zoo(vol_forecasts_garch, file = "act_garch_forecasts.csv", sep = ",", col.names = TRUE)
 
-#------------
+#---------#
+# MSGARCH #
+#---------#
 
-# msgarch model
-
-# Especificação do MSGARCH com 2 regimes e distribuição t-Student
+# especificação do MSGARCH com 2 regimes e distribuição t-Student
 msgarch_spec <- CreateSpec(
   variance.spec = list(model = "sGARCH"),
   distribution.spec = list(distribution = "std"),
   switch.spec = list(do.mix = FALSE, K = 2)  # Modelo com 2 regimes
 )
 
-# Janela deslizante
+# janela deslizante
 window_size <- 1000
 n <- nrow(df_returns)
 n_windows <- n - window_size
 
-# Vetores para previsões e datas
+# vetores para previsões e datas
 msgarch_predictions <- numeric(n_windows)
 dates_msgarch <- df_returns$Date[(window_size + 1):n]
 
@@ -100,7 +103,7 @@ dates_msgarch <- df_returns$Date[(window_size + 1):n]
 for (i in 1:n_windows) {
   train_data <- returns[i:(i + window_size - 1)]
   
-  # Ajustar o modelo MSGARCH
+  # ajustar o modelo MSGARCH
   msgarch_fit <- tryCatch({
     FitML(spec = msgarch_spec, data = train_data)
   }, error = function(e) {
@@ -128,72 +131,71 @@ for (i in 1:n_windows) {
   }
 }
 
-# Identificar índices válidos (previsões não são NA)
+# identificar índices válidos (previsões não são NA)
 valid_indices <- !is.na(msgarch_predictions)
 sum(valid_indices)
 
-# Filtrar previsões e datas
+# filtrar previsões e datas
 msgarch_predictions <- msgarch_predictions[valid_indices]
 dates_msgarch <- dates_msgarch[valid_indices]
 
-# Converter as datas
+# converter as datas
 dates_msgarch <- as.Date(dates_msgarch)
 
-# Plot
+# plot
 plot(dates_msgarch, msgarch_predictions, type = "l",
      main = "Volatility Forecasts - PETR4 - MSGARCH",
      xlab = "Date", ylab = "Volatility",
      col = "blue", lwd = 2)
 
-# Criar o objeto xts
+# criar o objeto xts
 vol_forecasts_msgarch <- xts(msgarch_predictions, order.by = dates_msgarch)
 colnames(vol_forecasts_msgarch) <- c("Forecasts")
 head(vol_forecasts_msgarch)
 
-# Salvar o objeto xts como CSV
+# salvar como CSV
 write.zoo(vol_forecasts_msgarch, file = "act_msgarch_forecasts.csv", sep = ",", col.names = TRUE)
 
-##########
-## GAS ##
-#########
+#-----#
+# GAS #
+#-----#
 
-# Especificação do modelo GAS
 gas_spec <- UniGASSpec(Dist = "std", ScalingType = "Identity",
                        GASPar = list(scale = TRUE))
 
-# Janela deslizante
+# janela deslizante
 window_size <- 1000
 n <- nrow(df_returns)
 n_windows <- n - window_size
 
-# Vetores para previsões e datas
+# vetores para previsões e datas
 gas_predictions <- numeric(n_windows)
 dates_gas <- df_returns$Date[(window_size + 1):n]
 
 for (i in 1:n_windows) {
-  # Dados para a janela atual
+  # dados para a janela atual
   train_data <- returns[i:(i + window_size - 1)]
   
-  # Ajustar o modelo GAS
+  # ajustar o modelo GAS
   fit_gas <- UniGASFit(gas_spec, train_data)
   
-  # Previsão
+  # previsão
   gas_forecast <- UniGASFor(fit_gas, H = 1)
   
-  # Armazenar a previsão de volatilidade
+  # armazenar a previsão de volatilidade
   gas_predictions[i] <- sqrt(gas_forecast@Forecast$PointForecast[2])  # Raiz da variância (volatilidade)
 }
 
 dates_gas <- as.Date(dates_gas)
 
-# Criar o objeto xts para análise
+# criar o objeto xts
 vol_forecasts_gas <- xts(gas_predictions, order.by = as.Date(dates_gas))
 colnames(vol_forecasts_gas) <- c("Forecasts")
 
-# Salvar o objeto xts como CSV
+# salvar como CSV
 write.zoo(vol_forecasts_gas, file = "act_gas_forecasts.csv", sep = ",", col.names = TRUE)
 
-# Gerar o gráfico
+# gráfico
 plot(dates_gas, gas_predictions, type = "l",
      main = "Previsões de Volatilidade - GAS",
      xlab = "Data", ylab = "Volatilidade",
