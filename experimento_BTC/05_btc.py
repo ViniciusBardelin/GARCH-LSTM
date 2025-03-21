@@ -10,15 +10,13 @@ from tensorflow.keras.callbacks import EarlyStopping
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error, mean_absolute_error
 
-## Dados
-
-# Carregando previsoes dos modelos hibridos
+# carregando previsoes dos modelos hibridos
 garch_lstm = pd.read_csv('act_garch_lstm.csv')['Predicted Values']
 msgarch_lstm = pd.read_csv('act_msgarch_lstm.csv')['Predicted Values']
 gas_lstm = pd.read_csv('act_gas_lstm.csv')['Predicted Values']
 volatility = pd.read_csv('act_garch_lstm.csv')['Proxy Values']
 
-# Criando dataframe das previsoes dos modelos hibridos + proxy da volatilidade 
+# criando dataframe das previsoes dos modelos hibridos + proxy da volatilidade 
 df = pd.DataFrame({
     'GARCH_LSTM': garch_lstm,
     'MSGARCH_LSTM': msgarch_lstm,
@@ -26,20 +24,20 @@ df = pd.DataFrame({
     'Volatility': volatility
 })
 
-# Selecionando os dados
-X = df.iloc[:, :3].values  # Previsões dos três modelos híbridos
-y = df.iloc[:, 3].values   # Proxy
+# selecionando os dados
+X = df.iloc[:, :3].values  # previsões dos tres modelos hibridos
+y = df.iloc[:, 3].values   # proxy (target)
 
-X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42) # usando ´test_size = 0.2´: gmg_02; usando ´test_size = 0.3´: gmg
+X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# Callback para Early Stopping
+# early stopping
 early_stopping = EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True, verbose=1)
 
-# Loop para treinar 25 vezes
+# loop para treinar 25 vezes
 for i in range(1, 26):
     print(f"Treinamento {i}/25")
 
-    # Criando o modelo
+    # criando o modelo
     model = Sequential([
         Dense(64, input_dim=3, activation='relu'),  
         Dropout(0.1),  
@@ -50,14 +48,14 @@ for i in range(1, 26):
         Dense(1, activation='linear')  
     ])
 
-    # Compilando o modelo
+    # compilando o modelo
     model.compile(
         optimizer=Adam(learning_rate=0.001),  
         loss='mean_squared_error',  
         metrics=['mean_absolute_error']
     )
 
-    # Treinando o modelo com Early Stopping
+    # treinando o modelo
     model.fit(
         X_train, y_train,
         validation_data=(X_val, y_val),
@@ -67,40 +65,40 @@ for i in range(1, 26):
         callbacks=[early_stopping]  
     )
 
-    # Obter as previsões
+    # obter as previsoes
     y_pred = model.predict(X_val)
 
-    # Salvar previsões e valores reais
+    # salvar previsoes e valores reais
     predictions_df = pd.DataFrame({
         "Actual": y_val,  
         "Predicted": y_pred.flatten()  
     })
 
-    # Nome do arquivo para cada iteração
+    # nome do arquivo para cada iteração
     predictions_df.to_csv(f"ensemble_model_predictions_{i}.csv", index=False)
 
 print("Treinamento concluído! Todos os CSVs foram salvos.")
 
-## Encontrando as melhores métricas
+## encontrando as melhores metricas
 
-# FunÃ§Ã£o para calcular o QLIKE
+# funcao para calcular o QLIKE
 def calculate_qlike(y_true, y_pred):
     return np.mean(np.log(y_pred ** 2) + (y_true ** 2) / (y_pred ** 2))
 
-# FunÃ§Ã£o para calcular HMSE e HMAE
+# funcao para calcular HMSE e HMAE
 def calculate_hmse_hmae(y_true, y_pred):
     hmse = np.mean(((y_true - y_pred) ** 2) / np.maximum(1e-10, y_true ** 2))
     hmae = np.mean(np.abs(y_true - y_pred) / np.maximum(1e-10, y_true))
     return hmse, hmae
 
-# Lista todos os arquivos CSV gerados
+# lista todos os arquivos CSV gerados
 csv_files = glob.glob("ensemble_model_predictions_*.csv")
 
-# Inicializa variÃ¡veis para armazenar o melhor arquivo e o menor QLIKE
+# inicializa variaveis para armazenar o melhor arquivo e o menor QLIKE
 best_file = None
 best_qlike = float("inf")
 
-# Percorre todos os arquivos e calcula o QLIKE
+# percorre todos os arquivos e calcula o QLIKE
 for file in csv_files:
     df = pd.read_csv(file)
    
@@ -109,12 +107,12 @@ for file in csv_files:
    
     qlike = calculate_qlike(y_true, y_pred)
 
-    # Atualiza se o novo QLIKE for menor
+    # atualiza se o novo QLIKE for menor
     if qlike < best_qlike:
         best_qlike = qlike
         best_file = file
 
-# ApÃ³s encontrar o melhor arquivo, calcular as demais mÃ©tricas
+# apos encontrar o melhor arquivo, calcular as demais metricas
 if best_file:
     df_best = pd.read_csv(best_file)
     y_true_best = df_best["Actual"].values
