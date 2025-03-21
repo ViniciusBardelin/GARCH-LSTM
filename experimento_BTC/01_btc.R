@@ -70,7 +70,7 @@ colnames(vol_forecasts_garch) <- c("Forecasts")
 write.zoo(vol_forecasts_garch, file = "act_garch_forecasts.csv", sep = ",", col.names = TRUE)
 
 #---------#
-# MSGARCH #
+# msgarch #
 #---------#
 
 msgarch_spec <- CreateSpec(
@@ -136,7 +136,7 @@ head(vol_forecasts_msgarch)
 write.zoo(vol_forecasts_msgarch, file = "act_msgarch_forecasts.csv", sep = ",", col.names = TRUE)
 
 #-----#
-# GAS #
+# gas #
 #-----#
 
 gas_spec <- UniGASSpec(Dist = "std", ScalingType = "Identity",
