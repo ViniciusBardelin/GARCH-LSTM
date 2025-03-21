@@ -116,7 +116,7 @@ def train_and_select_best_model(data, proxy, window_size, num_runs=25):
 ## GARCH-LSTM ##
 ################
 
-# Carregar os dados e treinar o modelo
+# Carregar os dados
 volatility_data = pd.read_csv('act_garch_forecasts.csv')
 volatility_data.rename(columns={'Forecasts': 'Volatility'}, inplace=True)
 
@@ -155,7 +155,7 @@ train_and_select_best_model(data, proxy, window_size=22, num_runs=25)
 ## MSGARCH-LSTM ##
 ##################
 
-# Carregar os dados e treinar o modelo
+# Carregar os dados
 volatility_data = pd.read_csv('act_msgarch_forecasts.csv')
 volatility_data.rename(columns={'Forecasts': 'Volatility'}, inplace=True)
 
@@ -194,7 +194,7 @@ train_and_select_best_model(data, proxy, window_size=22, num_runs=25)
 ## GAS-LSTM ##
 ##############
 
-# Carregar os dados e treinar o modelo
+# Carregar os dados
 volatility_data = pd.read_csv('act_gas_forecasts.csv')
 volatility_data.rename(columns={'Forecasts': 'Volatility'}, inplace=True)
 
@@ -273,45 +273,3 @@ data = merged_data['Normalized_Volatility'].values
 
 # Treinar e selecionar o melhor modelo com base no QLIKE
 train_and_select_best_model(data, proxy, window_size=22, num_runs=25)
-
-
-
-
-
-
-
-
-
-
-'''
-
-## MSGARCH-LSTM
-# Carregar os dados e treinar o modelo
-msgarch = pd.read_csv('hbd_msgarch.csv')
-
-# Padronizar as previsões de volatilidade do GARCH
-x_min = msgarch['Predicted_Volatility'].min()
-x_max = msgarch['Predicted_Volatility'].max()
-msgarch['Normalized_Volatility'] = (msgarch['Predicted_Volatility'] - x_min) / (x_max - x_min)
-
-# Padronizar a proxy
-proxy_min = msgarch['Proxy_Values'].min()
-proxy_max = msgarch['Proxy_Values'].max()
-msgarch['Normalized_Proxy'] = (msgarch['Proxy_Values'] - proxy_min) / (proxy_max - proxy_min)
-
-# Alinhar as previsões e proxy
-aligned_length = min(len(msgarch['Normalized_Proxy']), len(msgarch['Normalized_Volatility']))
-proxy = msgarch['Normalized_Proxy'].values[-aligned_length:]
-data = msgarch['Normalized_Volatility'].values[-aligned_length:]
-
-# Remover NAs
-msgarch.dropna(inplace=True)
-aligned_length = min(len(proxy_data), len(volatility_data))
-proxy = msgarch['Normalized_Proxy'].values[-aligned_length:]
-data = msgarch['Normalized_Volatility'].values[-aligned_length:]
-
-# Treinar e selecionar o melhor modelo com base no QLIKE
-train_and_select_best_model(data, proxy, window_size=22, num_runs=25)
-
-'''
-
