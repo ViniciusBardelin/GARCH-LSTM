@@ -1,0 +1,5 @@
+A ideia do experimento dessa pasta é basicamente refazer o que eu já tinha feito com o BTC mas considerando períodos justos para comparação entre os modelos (a rede LSTM pura estava indo muito melhhor)
+
+- agora a ideia é treinar todos os modelos em um período fixo e calcular as métricas para um mesmo período de validação
+
+- primeiro, vou ter que rodar os modelos R novamente; 
