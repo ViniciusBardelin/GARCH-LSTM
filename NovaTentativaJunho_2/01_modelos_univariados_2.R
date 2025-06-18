@@ -2,8 +2,6 @@
 # BIBLIOTECAS E DADOS
 # ----------------------------
 
-## Esse script salva todos os valores do dia 1 até 2632, onde [1,1500] são os valores ajustados e [1501,2632] são os valores preditos.
-## esse script é uma adaptação de 01_modelos_univariados_1.R
 ## garch funciona! GAS não!
 
 library(rugarch)
@@ -29,26 +27,11 @@ n_ins <- 1500
 # ESPECIFICAÇÕES DOS MODELOS
 # ----------------------------
 
-# trucios
-#g_spec <- ugarchspec(
-#  variance.model     = list(model = "sGARCH"),
-#  mean.model         = list(armaOrder = c(0,0), include.mean = FALSE),
-#  distribution.model = "std"
-#)
-
-# novo -> mudei pois armaOrder é outra coisa! por padrão ele ja usa (1,1) para modelar a variância!
 garch_spec<- ugarchspec(
   variance.model = list(model= "sGARCH", garchOrder = c(1,1)),
   mean.model = list(armaOrder  = c(0,0), include.mean = FALSE),
   distribution.model = "std"
 )
-
-# original
-#garch_spec <- ugarchspec(
-#  variance.model = list(model = "sGARCH"),
-#  mean.model = list(armaOrder = c(1,1)),
-#  distribution.model = "std"
-#)
 
 msgarch_spec <- CreateSpec(
   variance.spec = list(model = "sGARCH"),
@@ -70,7 +53,7 @@ generate_sigma_hat_completo <- function(returns, model_type, window_size = 1500)
   n <- length(returns)
   sigma_hat <- rep(NA, n)
   
-  # Valores ajustados (1 até window_size)
+  # Adjusted values
   fit_tudo <- switch(model_type,
                      "garch" = ugarchfit(garch_spec, returns[1:window_size]),
                      "msgarch" = FitML(msgarch_spec, returns[1:window_size]),
@@ -86,7 +69,7 @@ generate_sigma_hat_completo <- function(returns, model_type, window_size = 1500)
     sigma_hat[1:window_size] <- as.numeric(fitted(fit_tudo)) * nu / (nu - 2)
   }
   
-  # Previsões (window)
+  # Predictions (window)
   for (i in (window_size + 1):n) {
     window_returns <- returns[(i - window_size):(i - 1)]
     
@@ -111,7 +94,7 @@ generate_sigma_hat_completo <- function(returns, model_type, window_size = 1500)
 }
 
 # ----------------------------
-# GERAR RESULTADOS
+# RESULTS
 # ----------------------------
 
 sigma_garch <- generate_sigma_hat_completo(returns, "garch", n_ins)
