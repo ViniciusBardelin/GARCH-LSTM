@@ -102,15 +102,9 @@ sigma_gas <- generate_sigma_hat_completo(returns, "gas", n_ins)
 sigma_msgarch <- generate_sigma_hat_completo(returns, "msgarch", n_ins)
 
 
-######## validando GARCH por enquanto
-# Criar dataframe com datas e sigma_garch
-df_garch <- data.frame(
-  Date = df$Date,
-  Sigma_GARCH = sigma_garch
-)
-
-# Exportar para CSV
-#write.csv(df_garch, "sigma_garch_ajustado_e_previsto.csv", row.names = FALSE)
+# ----------------------------
+# GARCH (só garch por enquanto)
+# ----------------------------
 
 resultados_garch <- data.frame(
   Date = df$Date,
@@ -119,7 +113,7 @@ resultados_garch <- data.frame(
   Sigma_GARCH = sigma_garch
 )
 
-# Calcular resíduos
+# Residuals
 resultados_garch <- resultados_garch %>%
   mutate(
     Residuals_garch = if_else(!is.na(Sigma_GARCH) & Sigma_GARCH > 0,
@@ -127,7 +121,6 @@ resultados_garch <- resultados_garch %>%
                               NA_real_)
   )
 
-# Exportar para CSV
 write.csv(resultados_garch, "volatilidades_previstas_completo_corrigido_GARCH_1_1.csv", row.names = FALSE)
 
 # Métricas só para o GARCH
@@ -147,7 +140,7 @@ mse_val_GARCH <- mse(returns2_GARCH, sigma2_hat_GARCH)
 cat("MSE_GARCH:", mse_val_GARCH, "\n")
 
 
-##########
+#############
 
 resultados <- data.frame(
   Date = df$Date,
