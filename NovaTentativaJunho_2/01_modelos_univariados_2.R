@@ -101,9 +101,9 @@ sigma_garch <- generate_sigma_hat_completo(returns, "garch", n_ins)
 sigma_gas <- generate_sigma_hat_completo(returns, "gas", n_ins)
 sigma_msgarch <- generate_sigma_hat_completo(returns, "msgarch", n_ins)
 
-
+#####################################################################################################################################################
 # ----------------------------
-# GARCH (só garch por enquanto)
+# (só garch por enquanto)
 # ----------------------------
 
 resultados_garch <- data.frame(
@@ -138,9 +138,7 @@ print(paste("QLIKE_GARCH:", qlike_GARCH))
 ## MSE
 mse_val_GARCH <- mse(returns2_GARCH, sigma2_hat_GARCH)
 cat("MSE_GARCH:", mse_val_GARCH, "\n")
-
-
-#############
+#####################################################################################################################################################
 
 resultados <- data.frame(
   Date = df$Date,
