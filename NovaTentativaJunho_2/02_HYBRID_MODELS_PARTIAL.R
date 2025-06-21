@@ -20,7 +20,7 @@ EPOCHS <- 100
 BATCH_SIZE <- 32
 save_every <- 100  # Salvar a cada 100 janelas
 
-# === FUNÇÃO PARA CRIAR JANELAS === #
+# === JANELAS PARA LSTM === #
 create_windows <- function(features, target, window_size) {
   X <- list()
   y <- list()
@@ -36,7 +36,7 @@ create_windows <- function(features, target, window_size) {
   return(list(X = X_array, y = y_array))
 }
 
-# === DEFINIÇÃO DO MODELO === #
+# === CONFIGURAÇÃO DO MODELO === #
 build_lstm_model <- function(input_shape) {
   model <- keras_model_sequential() %>%
     layer_lstm(units = 32, 
