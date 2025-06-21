@@ -1,5 +1,5 @@
 # ----------------------------
-# BIBLIOTECAS E DADOS
+# LIBRARIES AND DATA
 # ----------------------------
 
 library(rugarch)
@@ -15,13 +15,13 @@ returns <- df$Returns
 N <- length(returns)
 
 # ----------------------------
-# PARÂMETRO
+# WINDOW_SIZE ROLLING WINDOW
 # ----------------------------
 
 n_ins <- 1500
 
 # ----------------------------
-# ESPECIFICAÇÕES DOS MODELOS
+# MODEL SPECS
 # ----------------------------
 
 garch_spec<- ugarchspec(
@@ -43,7 +43,7 @@ gas_spec <- UniGASSpec(
 )
 
 # ----------------------------
-# VALORES AJUSTADOS + PREVISÕES
+# ADJUSTED VALUES AND FORECASTS
 # ----------------------------
 
 generate_sigma_hat_completo <- function(returns, model_type, window_size = 1500) {
@@ -91,7 +91,7 @@ generate_sigma_hat_completo <- function(returns, model_type, window_size = 1500)
 }
 
 # ----------------------------
-# RESULTADOS
+# RESULTS
 # ----------------------------
 
 sigma_garch <- generate_sigma_hat_completo(returns, "garch", n_ins)
@@ -146,7 +146,6 @@ resultados <- data.frame(
   MSGARCH = sigma_msgarch
 )
 
-# Cálculo dos resíduos
 resultados <- resultados %>%
   mutate(
     Residuals_garch = if_else(!is.na(GARCH) & GARCH > 0, Returns / sqrt(GARCH), NA_real_),
