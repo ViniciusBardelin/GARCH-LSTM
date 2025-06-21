@@ -1,3 +1,7 @@
+# ----------------------------
+# LIBRARIES AND DATA
+# ----------------------------
+
 library(keras)
 library(caret)
 library(abind)
@@ -9,7 +13,10 @@ library(tidyr)
 library(Metrics)
 library(ggplot2)
 
-# === PARÂMETROS GLOBAIS === #
+# ----------------------------
+# GLOBAL PARAMETERS
+# ----------------------------
+
 WINDOW_SIZE <- 30 # tamanho da janela dentro da LSTM
 NUM_RUNS <- 1
 MODELS <- c("garch")
@@ -18,9 +25,12 @@ USE_FEATURES <- c("Sigma_GARCH")
 N_INS <- 1500
 EPOCHS <- 100
 BATCH_SIZE <- 32
-save_every <- 100  # Salvar a cada 100 janelas
+save_every <- 100  # salvar previsões a cada 100 janelas
 
-# === JANELAS PARA LSTM === #
+# ----------------------------
+# LOOPBACK WINDOWS FOR LSTM 
+# ----------------------------
+
 create_windows <- function(features, target, window_size) {
   X <- list()
   y <- list()
@@ -36,7 +46,10 @@ create_windows <- function(features, target, window_size) {
   return(list(X = X_array, y = y_array))
 }
 
-# === CONFIGURAÇÃO DO MODELO === #
+# ----------------------------
+# LSTM STRUCTURE 
+# ----------------------------
+
 build_lstm_model <- function(input_shape) {
   model <- keras_model_sequential() %>%
     layer_lstm(units = 32, 
@@ -54,7 +67,10 @@ build_lstm_model <- function(input_shape) {
   model
 }
 
-# === TREINAMENTO EM UMA JANELA === #
+# ----------------------------
+# TRAINING FUNCTIONS
+# ----------------------------
+
 train_lstm_in_window <- function(df_window, model_type, run) {
   feature_cols <- USE_FEATURES
   
@@ -105,9 +121,8 @@ train_lstm_in_window <- function(df_window, model_type, run) {
   return(list(model = model, preProc_X = preProc_X, y_min = y_min, y_max = y_max))
 }
 
-# === ROLLING FORECAST (salvando a cada 100 janelas) === #
 run_rolling_forecast <- function() {
-  df <- read.csv("volatilidades_previstas_completo_corrigido_GARCH_1_1.csv") # atualizei o CSV, GARCH(1,1) COM armaOrder(0,0)!
+  df <- read.csv("volatilidades_previstas_completo_corrigido_GARCH_1_1.csv") 
   total_linhas <- nrow(df)
   cat("Total de linhas no dataset:", total_linhas, "\n")
   
