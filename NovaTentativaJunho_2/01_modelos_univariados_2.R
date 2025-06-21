@@ -9,14 +9,13 @@ library(dplyr)
 library(tidyr)
 library(Metrics)
 
-# Carregar dados
 df <- read.csv('retornos_btc.csv')
 df$Date <- as.Date(df$Date)
 returns <- df$Returns
 N <- length(returns)
 
 # ----------------------------
-# PARÂMETROS
+# PARÂMETRO
 # ----------------------------
 
 n_ins <- 1500
@@ -92,7 +91,7 @@ generate_sigma_hat_completo <- function(returns, model_type, window_size = 1500)
 }
 
 # ----------------------------
-# RESULTS
+# RESULTADOS
 # ----------------------------
 
 sigma_garch <- generate_sigma_hat_completo(returns, "garch", n_ins)
@@ -111,7 +110,7 @@ resultados_garch <- data.frame(
   Sigma_GARCH = sigma_garch
 )
 
-# Residuals
+# Residuals garch
 resultados_garch <- resultados_garch %>%
   mutate(
     Residuals_garch = if_else(!is.na(Sigma_GARCH) & Sigma_GARCH > 0,
@@ -123,13 +122,13 @@ write.csv(resultados_garch, "volatilidades_previstas_completo_corrigido_GARCH_1_
 
 # Métricas só para o GARCH
 preds_GARCH <- read.csv("volatilidades_previstas_completo_corrigido_GARCH_1_1.csv")
-preds_GARCH <- tail(preds_GARCH, 1132) # considerando apenas o período de previsões do modelo híbrido
+preds_GARCH <- tail(preds_GARCH, 1132) 
 
-sigma2_hat_GARCH <- preds_GARCH$Sigma_GARCH # previsões de sigma^2
-returns2_GARCH <- preds_GARCH$Returns_sq # retornos^2 como proxy da volatilidade
+sigma2_hat_GARCH <- preds_GARCH$Sigma_GARCH 
+returns2_GARCH <- preds_GARCH$Returns_sq 
 
 ## QLIKE
-valid_GARCH <- !is.na(sigma2_hat_GARCH) & !is.na(returns2_GARCH) & sigma2_hat_GARCH > 1e-8  # evitar divisão por números muito pequenos
+valid_GARCH <- !is.na(sigma2_hat_GARCH) & !is.na(returns2_GARCH) & sigma2_hat_GARCH > 1e-8 
 qlike_GARCH <- mean(log(sigma2_hat_GARCH[valid_GARCH]) + (returns2_GARCH[valid_GARCH] / sigma2_hat_GARCH[valid_GARCH]))
 print(paste("QLIKE_GARCH:", qlike_GARCH))
 
@@ -154,9 +153,5 @@ resultados <- resultados %>%
     Residuals_msgarch = if_else(!is.na(MSGARCH) & MSGARCH > 0, Returns / sqrt(MSGARCH), NA_real_),
     Residuals_gas = if_else(!is.na(GAS) & GAS > 0, Returns / sqrt(GAS), NA_real_)
   )
-
-# ----------------------------
-# EXPORTAR
-# ----------------------------
 
 write.csv(resultados, "volatilidades_previstas_completo_corrigido.csv", row.names = FALSE)
