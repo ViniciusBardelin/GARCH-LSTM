@@ -10,7 +10,7 @@ library(Metrics)
 library(ggplot2)
 
 # === PARÂMETROS GLOBAIS === #
-WINDOW_SIZE <- 15 # tamanho da janela dentro da LSTM
+WINDOW_SIZE <- 30 # tamanho da janela dentro da LSTM
 NUM_RUNS <- 1
 MODELS <- c("garch")
 TARGET <- "Returns_sq"
@@ -39,9 +39,9 @@ create_windows <- function(features, target, window_size) {
 # === DEFINIÇÃO DO MODELO === #
 build_lstm_model <- function(input_shape) {
   model <- keras_model_sequential() %>%
-    layer_lstm(units = 64, return_sequences = TRUE, input_shape = input_shape) %>%
-    layer_dropout(rate = 0.2) %>%
-    layer_lstm(units = 32, return_sequences = TRUE) %>%
+    layer_lstm(units = 32, 
+               return_sequences = TRUE, 
+               input_shape = input_shape) %>%
     layer_dropout(rate = 0.2) %>%
     layer_lstm(units = 16) %>%
     layer_dropout(rate = 0.2) %>%
@@ -49,10 +49,9 @@ build_lstm_model <- function(input_shape) {
   
   model %>% compile(
     optimizer = optimizer_adam(learning_rate = 0.001),
-    loss = "mse"
+    loss      = "mse"
   )
-  
-  return(model)
+  model
 }
 
 # === TREINAMENTO EM UMA JANELA === #
