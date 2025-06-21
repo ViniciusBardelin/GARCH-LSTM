@@ -105,7 +105,7 @@ train_lstm_in_window <- function(df_window, model_type, run) {
   return(list(model = model, preProc_X = preProc_X, y_min = y_min, y_max = y_max))
 }
 
-# === ROLLING FORECAST (salvando a cada 100 previsões) === #
+# === ROLLING FORECAST (salvando a cada 100 janelas) === #
 run_rolling_forecast <- function() {
   df <- read.csv("volatilidades_previstas_completo_corrigido_GARCH_1_1.csv") # atualizei o CSV, GARCH(1,1) COM armaOrder(0,0)!
   total_linhas <- nrow(df)
