@@ -2,8 +2,6 @@
 # BIBLIOTECAS E DADOS
 # ----------------------------
 
-## garch funciona! GAS não!
-
 library(rugarch)
 library(MSGARCH)
 library(GAS)
@@ -46,7 +44,7 @@ gas_spec <- UniGASSpec(
 )
 
 # ----------------------------
-# FUNÇÃO PARA GERAR AJUSTADOS + PREVISÕES
+# VALORES AJUSTADOS + PREVISÕES
 # ----------------------------
 
 generate_sigma_hat_completo <- function(returns, model_type, window_size = 1500) {
@@ -103,7 +101,7 @@ sigma_msgarch <- generate_sigma_hat_completo(returns, "msgarch", n_ins)
 
 #####################################################################################################################################################
 # ----------------------------
-# (só garch por enquanto)
+# (obtendo os resultados só do garch por enquanto, até encontrar a melhor configuração de modelo híbrido)
 # ----------------------------
 
 resultados_garch <- data.frame(
