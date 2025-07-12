@@ -39,7 +39,7 @@ n_ins <- 1500
 #)
 
 # novo -> mudei pois armaOrder é outra coisa! por padrão ele ja usa (1,1) para modelar a variância!
-garch_spec<- ugarchspec(
+garch_spec <- ugarchspec(
   variance.model = list(model= "sGARCH", garchOrder = c(1,1)),
   mean.model = list(armaOrder  = c(0,0), include.mean = FALSE),
   distribution.model = "std"
