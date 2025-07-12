@@ -24,7 +24,7 @@ df = df.sort_values('Date').reset_index(drop=True)
 
 # ————— Configuração do walk‐forward —————
 window_size   = 22    # look-back de 1 mês (22 pregões)
-initial_train = 1900  # treina com 1500 primeiras observações
+initial_train = 1500  # treina com 1500 primeiras observações
 retrain_every = 252   # retrena a cada 252 pregões (~1 ano)
 feature_cols   = ['Sigma_GARCH', 'Returns']  # features para o LSTM
 
