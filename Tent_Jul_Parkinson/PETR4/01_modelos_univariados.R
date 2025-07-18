@@ -122,7 +122,7 @@ resultados_garch <- resultados_garch %>%
   )
 
 # Exportar para CSV
-#write.csv(resultados_garch, "vol_GARCH_1_1.csv", row.names = FALSE)
+write.csv(resultados_garch, "vol_GARCH_1_1.csv", row.names = FALSE)
 
 # --- --- #
 
