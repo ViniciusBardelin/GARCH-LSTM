@@ -36,65 +36,13 @@ gas_spec <- UniGASSpec(
   GASPar = list(locate = FALSE, scale = TRUE, shape = FALSE)
 )
 
-# Valores ajustados e previsões (função errada)
-'''
-generate_sigma_hat_completo <- function(returns, model_type, window_size = 1500) {
-  n <- length(returns)
-  sigma_hat <- rep(NA_real_, n)
-  
-  # centrando a série
-  initial_window <- returns[1:window_size]
-  mu0 <- mean(initial_window, na.rm = TRUE)
-  centered0 <- initial_window - mu0
-  
-  fit_tudo <- switch(model_type,
-                     "garch"   = ugarchfit(garch_spec, centered0),
-                     "msgarch" = FitML(msgarch_spec, centered0),
-                     "gas"     = UniGASFit(gas_spec, centered0)
-  )
-  
-  sigma_hat[1:window_size] <- switch(model_type,
-                                     "garch"   = as.numeric(sigma(fit_tudo))^2,
-                                     "msgarch" = as.numeric(Volatility(fit_tudo))^2,
-                                     "gas" = {
-                                       vol_in_sample <- getMoments(fit_tudo)[, "M2"]
-                                       nu <- fit_tudo@GASDyn$mTheta[3, 1]
-                                       vol_in_sample * nu / (nu - 2)
-                                     }
-  )
-    
-  for (i in (window_size + 1):n) {
-    w <- returns[(i - window_size):(i - 1)]
-    mu <- mean(w, na.rm = TRUE)
-    wc <- w - mu
-    
-    fit <- switch(model_type,
-                  "garch"   = ugarchfit(garch_spec, wc),
-                  "msgarch" = FitML(msgarch_spec, wc),
-                  "gas"     = UniGASFit(gas_spec, wc)
-    )
-    
-    sigma_hat[i] <- switch(model_type,
-                           "garch"   = as.numeric(sigma(fit)[window_size])^2,
-                           "msgarch" = (predict(fit, nahead = 1)$vol)^2,
-                           "gas"     = {
-                             forecast <- UniGASFor(fit, H = 1)
-                             nu <- fit@GASDyn$mTheta[3, 1]
-                             forecast@Forecast$PointForecast[2] * nu / (nu - 2)
-                           }
-    )
-  }
-  
-  return(sigma_hat)
-}
-'''
-# NOVA FUNÇÃO
+# Valores ajustados e previsões 
 generate_sigma_hat_completo <- function(returns, model_type, window_size = 1500) {
   n <- length(returns)
   sigma_hat_adjusted <- rep(NA_real_, n)
   sigma_hat_forecast <- rep(NA_real_, n)
   
-  # --- Ajuste in-sample ---
+  # --- Ajuste inicial in-sample ---
   initial_window <- returns[1:window_size]
   mu0 <- mean(initial_window, na.rm = TRUE)
   centered0 <- initial_window - mu0
@@ -117,7 +65,7 @@ generate_sigma_hat_completo <- function(returns, model_type, window_size = 1500)
   
   sigma_hat_forecast[1:window_size] <- sigma_hat_adjusted[1:window_size]
   
-  # --- Rolling OoS ---
+  # --- Rolling forecast OoS ---
   for (i in (window_size + 1):n) {
     w <- returns[(i - window_size):(i - 1)]
     mu <- mean(w, na.rm = TRUE)
@@ -164,7 +112,7 @@ generate_sigma_hat_completo <- function(returns, model_type, window_size = 1500)
   ))
 }
 
-# Gerar resultados (novo)
+# Gerar resultados
 df_garch_sigma <- generate_sigma_hat_completo(returns, "garch", window_size = 1500)
 
 df_msgarch_sigma <- generate_sigma_hat_completo(returns, "msgarch", window_size = 1500)
@@ -172,14 +120,7 @@ df_msgarch_sigma <- generate_sigma_hat_completo(returns, "msgarch", window_size 
 df_gas_sigma <- generate_sigma_hat_completo(returns, "gas", window_size = 1500)
 
 
-
-
-# Gerar resultados (antigo)
-#sigma_garch <- generate_sigma_hat_completo(returns, "garch", n_ins)
-#sigma_msgarch <- generate_sigma_hat_completo(returns, "msgarch", n_ins)
-#sigma_gas <- generate_sigma_hat_completo(returns, "gas", n_ins)
-
-# --- Validando só GARCH por enquanto --- #
+# --- GARCH --- #
 
 # Criar dataframe com datas e sigma_garch
 df_garch <- data.frame(
@@ -280,9 +221,7 @@ out <- data.frame(
 
 write.csv(out, "means_1500_garch_1_1.csv", row.names = FALSE)
 
-########### MSGARCH
-
-# --- Validando só MSGARCH por enquanto --- #
+# --- MSGARCH --- #
 
 # Criar dataframe com datas e sigma_garch
 df_msgarch <- data.frame(
@@ -331,9 +270,7 @@ write.csv(dat_merged, "vol_MSGARCH_1_1_new.csv", row.names = FALSE)
 
 plot(dat_merged$Sigma_MSGARCH, type = 'l')
 
-## GAS
-
-# --- Validando só GAS por enquanto --- #
+# --- GAS --- #
 
 # Criar dataframe com datas e sigma_gas
 df_gas <- data.frame(
@@ -381,13 +318,3 @@ head(dat_merged)
 write.csv(dat_merged, "vol_GAS_1_1_new.csv", row.names = FALSE)
 
 plot(df_gas$Sigma_GAS, type = 'l')
-
-
-
-
-
-
-
-
-dplot <- read.csv("vol_GARCH_1_1_new.csv")
-plot(dplot$Sigma_GARCH, type = 'l')
