@@ -88,13 +88,13 @@ generate_sigma_hat_completo <- function(returns, model_type, window_size = 1500)
   return(sigma_hat)
 }
 '''
-# nova função
+# NOVA FUNÇÃO
 generate_sigma_hat_completo <- function(returns, model_type, window_size = 1500) {
   n <- length(returns)
   sigma_hat_adjusted <- rep(NA_real_, n)
   sigma_hat_forecast <- rep(NA_real_, n)
   
-  # --- Ajuste inicial in-sample ---
+  # --- Ajuste in-sample ---
   initial_window <- returns[1:window_size]
   mu0 <- mean(initial_window, na.rm = TRUE)
   centered0 <- initial_window - mu0
@@ -117,7 +117,7 @@ generate_sigma_hat_completo <- function(returns, model_type, window_size = 1500)
   
   sigma_hat_forecast[1:window_size] <- sigma_hat_adjusted[1:window_size]
   
-  # --- Rolling forecast OoS ---
+  # --- Rolling OoS ---
   for (i in (window_size + 1):n) {
     w <- returns[(i - window_size):(i - 1)]
     mu <- mean(w, na.rm = TRUE)
@@ -164,7 +164,7 @@ generate_sigma_hat_completo <- function(returns, model_type, window_size = 1500)
   ))
 }
 
-# Gerar resulta (novo)
+# Gerar resultados (novo)
 df_garch_sigma <- generate_sigma_hat_completo(returns, "garch", window_size = 1500)
 
 df_msgarch_sigma <- generate_sigma_hat_completo(returns, "msgarch", window_size = 1500)
