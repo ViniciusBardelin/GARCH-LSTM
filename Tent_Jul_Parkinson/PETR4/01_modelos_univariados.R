@@ -1,7 +1,3 @@
-# ----------------------------
-# Bibliotecas e dados
-# ----------------------------
-
 library(rugarch)
 library(MSGARCH)
 library(GAS)
@@ -143,9 +139,6 @@ resultados_garch <- resultados_garch %>%
                               Returns / sqrt(Sigma_GARCH),
                               NA_real_)
   )
-
-# Exportar para CSV
-#write.csv(resultados_garch, "vol_GARCH_1_1.csv", row.names = FALSE)
 
 # --- --- #
 
