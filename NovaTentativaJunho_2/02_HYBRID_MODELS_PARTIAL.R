@@ -51,7 +51,6 @@ build_lstm_model <- function(input_shape) {
     optimizer = optimizer_adam(learning_rate = 0.001),
     loss = "mse"
   )
-  
   return(model)
 }
 
