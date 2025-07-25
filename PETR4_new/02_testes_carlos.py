@@ -334,7 +334,8 @@ history = model.fit(
 # ————— Resíduos in-sample da LSTM —————
 p_log_in = model.predict(X_tr, verbose=0)  # previsões sobre o treino inicial
 p_in = scaler_y.inverse_transform(p_log_in)[:, 0]
-p_in = np.exp(p_in) - 1e-8  
+p_in = np.exp(p_in) - 1e-8 
+p_in = np.sqrt(p_in)  
 rets_in = df['Returns'].values[window_size:initial_train]
 resid_in = rets_in / p_in # resíduos padronizados
 dates_in = df['Date'].iloc[window_size:initial_train].reset_index(drop=True)
@@ -342,7 +343,7 @@ os.makedirs("Res", exist_ok=True)
 pd.DataFrame({
     'Date': dates_in,
     'Residual': resid_in
-}).to_csv("Res/MSGARCH_LSTM_residuals_in_sample_T101_tst_carlos_1.csv", index=False)
+}).to_csv("Res/MSGARCH_LSTM_residuals_in_sample_T101_tst_carlos_1_padronizado_COM_MEAN.csv", index=False)
 
 # ————— Walk-forward  —————
 preds, pred_dates = [], []
@@ -560,6 +561,7 @@ history = model.fit(
 p_log_in = model.predict(X_tr, verbose=0)  # previsões sobre o treino inicial
 p_in = scaler_y.inverse_transform(p_log_in)[:, 0]
 p_in = np.exp(p_in) - 1e-8  
+p_in = np.sqrt(p_in) 
 rets_in = df['Returns'].values[window_size:initial_train]
 resid_in = rets_in / p_in # resíduos padronizados
 dates_in = df['Date'].iloc[window_size:initial_train].reset_index(drop=True)
@@ -567,7 +569,7 @@ os.makedirs("Res", exist_ok=True)
 pd.DataFrame({
     'Date': dates_in,
     'Residual': resid_in
-}).to_csv("Res/GAS_LSTM_residuals_in_sample_T101_tst_carlos_1.csv", index=False)
+}).to_csv("Res/GAS_LSTM_residuals_in_sample_T101_tst_carlos_1_padronizado_COM_MEAN.csv", index=False)
 
 # ————— Walk-forward  —————
 preds, pred_dates = [], []
