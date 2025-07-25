@@ -37,9 +37,9 @@ df = df.sort_values('Date').reset_index(drop=True)
 window_size   = 22 # look-back
 initial_train = 1500 # treino inicial
 retrain_every = 100 # retreino
-feature_cols  = ['Sigma2_GARCH','Parkinson_lag1','Parkinson_lag5', 'Returns'] ##### sem resi
+feature_cols  = ['Sigma2_GARCH','Parkinson_lag1','Parkinson_lag5', 'Returns'] 
 
-# ————— Prepara arrays de features, target e datas —————
+# ————— Prepara features, target e datas —————
 features = df[feature_cols].values # shape: (N, n_features)
 raw_target = df['Parkinson'].values + 1e-8 # para evitar log(0)
 dates = df['Date']
@@ -114,7 +114,7 @@ p_in = scaler_y.inverse_transform(p_log_in)[:, 0]
 p_in = np.exp(p_in) - 1e-8 
 p_in = np.sqrt(p_in) 
 rets_in = df['Returns'].values[window_size:initial_train]
-resid_in = (rets_in) / p_in # resíduos padronizados SEM subtrair a média
+resid_in = (rets_in) / p_in 
 dates_in = df['Date'].iloc[window_size:initial_train].reset_index(drop=True)
 os.makedirs("Res", exist_ok=True)
 pd.DataFrame({
@@ -260,7 +260,7 @@ df = df.sort_values('Date').reset_index(drop=True)
 window_size   = 22 # look-back
 initial_train = 1500 # treino inicial
 retrain_every = 100 # retreino
-feature_cols  = ['Sigma2_MSGARCH','Parkinson_lag1','Parkinson_lag5', 'Returns'] ##### sem resi
+feature_cols  = ['Sigma2_MSGARCH','Parkinson_lag1','Parkinson_lag5', 'Returns'] 
 
 # ————— Prepara arrays de features, target e datas —————
 features = df[feature_cols].values # shape: (N, n_features)
