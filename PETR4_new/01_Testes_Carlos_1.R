@@ -17,7 +17,7 @@ garch_spec<- ugarchspec(variance.model = list(model= "sGARCH", garchOrder = c(1,
 msgarch_spec <- CreateSpec(variance.spec = list(model = "sGARCH"), distribution.spec = list(distribution = "std"), switch.spec = list(do.mix = FALSE, K = 2))
 gas_spec <- UniGASSpec(Dist = "std", ScalingType = "Identity", GASPar = list(scale = TRUE))
 
-#InS
+# InS
 
 # Matriz com valores ajustados + previsões (variância sigma²)
 sigma2_completo <- matrix(NA_real_, nrow = n_tot, ncol = 3,
