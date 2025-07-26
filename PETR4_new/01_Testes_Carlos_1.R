@@ -17,7 +17,7 @@ garch_spec<- ugarchspec(variance.model = list(model= "sGARCH", garchOrder = c(1,
 msgarch_spec <- CreateSpec(variance.spec = list(model = "sGARCH"), distribution.spec = list(distribution = "std"), switch.spec = list(do.mix = FALSE, K = 2))
 gas_spec <- UniGASSpec(Dist = "std", ScalingType = "Identity", GASPar = list(scale = TRUE))
 
-# InS
+#InS
 
 # Matriz com valores ajustados + previsões (variância sigma²)
 sigma2_completo <- matrix(NA_real_, nrow = n_tot, ncol = 3,
@@ -153,11 +153,11 @@ sigma2_completo <- matrix(NA, nrow = n_total, ncol = 1)
 colnames(sigma2_completo) <- "ARFIMA1"
 
 # Ins
-log_pks <- df$Log_Parkinson[1:1500]
-log_pks_c <- scale(log_pks, scale = FALSE)
+log_pks_ins <- df$Log_Parkinson[1:1500]
+log_pks_ins_c <- scale(log_pks_ins, scale = FALSE)
 mu <- attr(log_pks_c, "scaled:center") 
 
-fit_0d1 <- try(arfima(log_pks_c, order = c(0, 0, 1), back = TRUE), silent = TRUE)
+fit_0d1 <- try(arfima(log_pks_ins_c, order = c(0, 0, 1), back = TRUE), silent = TRUE)
 
 resid_arfima <- resid(fit_0d1)
 resid_arfima <- resid_arfima$Mode1
