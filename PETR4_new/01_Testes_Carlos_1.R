@@ -143,40 +143,45 @@ df_oos <- data.frame(
 
 write.csv(df_oos, "previsoes_oos_vol_var_es.csv", row.names = FALSE)
 
-# ARFIMA PARKINSON CRU ---------------------------------- 
+# ARFIMA LOG PARKINSON 
 # --- Inicializa objetos para salvar previsões e ajustados ---
-sigma2_pkscru <- matrix(NA, nrow = n_oos, ncol = 1)
-colnames(sigma2_pkscru) <- "ARFIMA"
+sigma2_logpks <- matrix(NA, nrow = n_oos, ncol = 1)
+colnames(sigma2_logpks) <- "ARFIMA"
 
-sigma2_completo_pkscru <- matrix(NA, nrow = n_total, ncol = 1)
-colnames(sigma2_completo_pkscru) <- "ARFIMA"
+sigma2_completo_logpks <- matrix(NA, nrow = n_total, ncol = 1)
+colnames(sigma2_completo_logpks) <- "ARFIMA"
 
 # --- In-sample (ajuste nos 1500 primeiros) ---
 pks <- df$Parkinson[1:n_ins]
+log_pks <- log(pks) 
 
 # Melhor modelo identificado foi ARFIMA(0,d,1)
-fit_0d1 <- try(arfima(pks, order = c(0, 0, 1), back = TRUE), silent = TRUE)
+fit_0d1 <- try(arfima(log_pks, order = c(0, 0, 1), back = TRUE), silent = TRUE)
 
 # Extrai resíduos e valores ajustados do Mode 1
-resid_arfima_pkscru <- resid(fit_0d1)$Mode1
-fitted_arfima_pkscru <- fitted(fit_0d1)$Mode1
+resid_arfima_logpks <- resid(fit_0d1)$Mode1
+fitted_arfima_logpks <- fitted(fit_0d1)$Mode1
+
+fitted_arfima_logpks_exp <- exp(fitted_arfima_logpks)
 
 # Salva in-sample
-df_arfima_insample <- data.frame(
+df_arfima_insample_logpks <- data.frame(
   Date = df$Date[1:n_ins],
-  Sigma2_ARFIMA_ajustado = fitted_arfima_pkscru,
-  Residuals = resid_arfima_pkscru
+  Sigma2_ARFIMA_ajustado = fitted_arfima_logpks,
+  Sigma2_ARFIMA_ajustado_exp = fitted_arfima_logpks_exp,
+  Residuals = resid_arfima_logpks
 )
 
-write.csv(df_arfima_insample, "df_arfima_insample_pkscru.csv", row.names = FALSE)
+write.csv(df_arfima_insample_logpks, "df_arfima_insample_logpks.csv", row.names = FALSE)
 
 # --- Out-of-sample (rolling window sem log) ---
 pks_oos <- df$Parkinson  # série completa
+logpks_oos <- log(pks_oos)
 for (i in 1:n_oos) {
   cat("Iteração:", i, "\n")
   
   # Janela rolling de tamanho 1500
-  pks_window <- pks_oos[i:(i + n_ins - 1)]
+  pks_window <- logpks_oos[i:(i + n_ins - 1)]
   
   fit_0d1 <- try(arfima(pks_window, order = c(0, 0, 1), back = TRUE), silent = TRUE)
   
@@ -184,7 +189,7 @@ for (i in 1:n_oos) {
   if (!inherits(fit_0d1, "try-error")) {
     pred <- predict(fit_0d1, n.ahead = 1)
     sigma2_hat <- pred[[1]]$Forecast[1]
-    sigma2_pkscru[i, "ARFIMA"] <- sigma2_hat
+    sigma2_logpks[i, "ARFIMA"] <- sigma2_hat
   } else {
     warning(paste("Erro na iteração", i))
   }
@@ -193,10 +198,9 @@ for (i in 1:n_oos) {
 df_arfima_oos <- tibble(
   Date = df$Date[(n_ins + 1):(n_ins + n_oos)],
   Parkinson = df$Parkinson[(n_ins + 1):(n_ins + n_oos)],
-  Sigma2_ARFIMA = sigma2_pkscru[, "ARFIMA"]
+  Sigma2_ARFIMA = sigma2_logpks[, "ARFIMA"]
 )
 
 write.csv(df_arfima_oos, "df_arfima_oos.csv", row.names = FALSE)
-
 
 plot(sqrt(df_arfima_oos$Sigma2_ARFIMA), type = 'l')
