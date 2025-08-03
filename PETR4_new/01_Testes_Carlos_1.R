@@ -5,23 +5,25 @@ library(dplyr)
 library(tidyr)
 library(arfima)
 
+# Dados
 df <- read.csv("petr4_returns.csv")
 df$Date <- as.Date(df$Date)
 returns <- df$log_return
 
+# Parâmetros
 n_ins <- 1500
 n_tot <- length(returns)
 n_oos <- n_tot - n_ins
 
+# Especificações dos modelos
 garch_spec<- ugarchspec(variance.model = list(model= "sGARCH", garchOrder = c(1,1)), mean.model = list(armaOrder  = c(0,0), include.mean = FALSE), distribution.model = "std")
 msgarch_spec <- CreateSpec(variance.spec = list(model = "sGARCH"), distribution.spec = list(distribution = "std"), switch.spec = list(do.mix = FALSE, K = 2))
 gas_spec <- UniGASSpec(Dist = "std", ScalingType = "Identity", GASPar = list(scale = TRUE))
 
-#InS
+# In Sample
 
 # Matriz com valores ajustados + previsões (variância sigma²)
-sigma2_completo <- matrix(NA_real_, nrow = n_tot, ncol = 3,
-                          dimnames = list(NULL, c("GARCH", "MSGARCH", "GAS")))
+sigma2_completo <- matrix(NA_real_, nrow = n_tot, ncol = 3, dimnames = list(NULL, c("GARCH", "MSGARCH", "GAS")))
 
 # Ajuste único nos n_ins primeiros dados centrados
 returns_c <- scale(returns[1:n_ins], scale = FALSE)
@@ -35,7 +37,7 @@ sigma2_completo[1:n_ins, "GARCH"] <- sigma(fit_GARCH)^2
 sigma2_completo[1:n_ins, "GAS"] <- fit_GAS@GASDyn$mTheta[2, 1:n_ins] * fit_GAS@GASDyn$mTheta[3, 1] / (fit_GAS@GASDyn$mTheta[3, 1] - 2)
 sigma2_completo[1:n_ins, "MSGARCH"] <- Volatility(fit_MSGARCH)^2
 
-# OoS
+# Out of Sample
 ES_1 <- ES_2 <- ES_5 <- VaR_1 <- VaR_2 <- VaR_5 <- sigma2 <- matrix(0, ncol = 3, nrow = n_oos, dimnames = list(NULL, c("GARCH", "MSGARCH", "GAS")))
 r_oos <- c()
 for (i in 1:n_oos) {
@@ -58,12 +60,12 @@ for (i in 1:n_oos) {
   sigma2_completo[i + n_ins, "GAS"] <- fit_GAS@GASDyn$mTheta[2, n_ins] * fit_GAS@GASDyn$mTheta[3, 1] / (fit_GAS@GASDyn$mTheta[3, 1] - 2)
   sigma2_completo[i + n_ins, "MSGARCH"] <- Volatility(fit_MSGARCH)[n_ins]^2
   
-  # Residuals
+  # Resíduos
   res_GARCH <- as.numeric(returns_c/sigma(fit_GARCH))
   res_GAS <-   as.numeric(returns_c/sqrt(fit_GAS@GASDyn$mTheta[2, 1:n_ins] * fit_GAS@GASDyn$mTheta[3, 1] /(fit_GAS@GASDyn$mTheta[3, 1] - 2)))
   res_MSGARCH <- as.numeric(returns_c/ Volatility(fit_MSGARCH))
   
-  # VaR and ES 
+  # VaR e ES 
   # 1%
   VaR_1[i, "GARCH"] = mu + sqrt(sigma2[i, "GARCH"]) * quantile(res_GARCH, 0.01)
   VaR_1[i, "GAS"] = mu + sqrt(sigma2[i, "GAS"] )* quantile(res_GAS, 0.01)
@@ -95,7 +97,7 @@ for (i in 1:n_oos) {
   
 }
 
-# InS
+# Dataframe In Sample
 df_sigma2_completo <- data.frame(
   Date = df$Date,
   Returns = df$log_return,
@@ -107,7 +109,7 @@ df_sigma2_completo <- data.frame(
 
 write.csv(df_sigma2_completo, "sigma2_ajustado_e_previsto_completo.csv", row.names = FALSE)
 
-# OoS
+# Dataframe Out of Sample
 df_oos <- data.frame(
   Date = df$Date[(n_ins + 1):n_tot],
   Return = r_oos,
@@ -203,3 +205,4 @@ df_arfima <- data.frame(
 )
 
 write.csv(df_arfima, "df_arfima.csv", row.names = FALSE)
+
