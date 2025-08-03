@@ -14,8 +14,6 @@ library(Rcpp)
 source("Function_VaR_VQR.R")
 source("Optimizations.R")
 
-#sourceCpp("scoring_functions.cpp")
-
 # Parâmetros gerais
 initial_train <- 1500
 alphas <- c(0.01, 0.025, 0.05)
@@ -89,7 +87,6 @@ df_scores_garch <- data.frame(
   FZ = c(Back_VaR_FZ_GARCH_1, Back_VaR_FZ_GARCH_2, Back_VaR_FZ_GARCH_5),
   NZ = c(Back_VaR_NZ_GARCH_1, Back_VaR_NZ_GARCH_2, Back_VaR_NZ_GARCH_5)
 )
-
 
 # ES Backtest: CoC, ER, ESR
 vol_garch <- sqrt(df_garch$Vol2_GARCH[1:nrow(df_garch)])
@@ -256,8 +253,6 @@ Back_ES_ER_GAS_5 <- er_backtest(df_gas$Return, df_gas$VaR_GAS_5, df_gas$ES_GAS_5
 Back_ES_ESR_GAS_1_V1 <- esr_backtest(df_gas$Return, df_gas$VaR_GAS_1, df_gas$ES_GAS_1, alpha=0.01, version=1, B=0)
 Back_ES_ESR_GAS_2_V1 <- esr_backtest(df_gas$Return, df_gas$VaR_GAS_2, df_gas$ES_GAS_2, alpha=0.025, version=1, B=0)
 Back_ES_ESR_GAS_5_V1 <- esr_backtest(df_gas$Return, df_gas$VaR_GAS_5, df_gas$ES_GAS_5, alpha=0.05, version=1, B=0)
-
-
 # GARCH-LSTM ----------------------------------------------------------------------------
 sigma2_garch_lstm <- read_csv("DF_PREDS/GARCH_LSTM_T101_tst_carlos_1.csv", show_col_types = FALSE) %>%
   pull(Prediction)
@@ -348,7 +343,6 @@ Back_VaR_AL_GARCH_LSTM_2 <- mean(Back_VaR_AL_GARCH_LSTM_2)
 Back_VaR_AL_GARCH_LSTM_5 <- AL_deprecated(df_garch_lstm$VaR_GARCH_LSTM_5, df_garch_lstm$ES_GARCH_LSTM_5, df_garch_lstm$Return, 0.05)
 Back_VaR_AL_GARCH_LSTM_5 <- mean(Back_VaR_AL_GARCH_LSTM_5)
 
-
 df_scores_garch_lstm <- data.frame(
   Nível = c("1%", "2.5%", "5%"),
   QL = c(Back_VaR_QL_GARCH_LSTM_1, Back_VaR_QL_GARCH_LSTM_2, Back_VaR_QL_GARCH_LSTM_5),
@@ -394,7 +388,6 @@ ggplot(df_garch_lstm, aes(x = Date)) +
        x = "Data", y = "Retorno") +
   theme_minimal() +
   theme(plot.title = element_text(hjust = 0.5))
-
 # MSGARCH-LSTM ----------------------------------------------------------------------------
 sigma2_msgarch_lstm <- read_csv("DF_PREDS/MSGARCH_LSTM_T101_tst_carlos_1.csv", show_col_types = FALSE) %>%
   pull(Prediction)
@@ -506,7 +499,6 @@ Back_ES_ER_MSGARCH_LSTM_5 <- er_backtest(df_msgarch_lstm$Return, df_msgarch_lstm
 Back_ES_ESR_MSGARCH_LSTM_1_V1 <- esr_backtest(df_msgarch_lstm$Return, df_msgarch_lstm$VaR_MSGARCH_LSTM_1, df_msgarch_lstm$ES_MSGARCH_LSTM_1, alpha=0.01, version=1, B=0)
 Back_ES_ESR_MSGARCH_LSTM_2_V1 <- esr_backtest(df_msgarch_lstm$Return, df_msgarch_lstm$VaR_MSGARCH_LSTM_2_5, df_msgarch_lstm$ES_MSGARCH_LSTM_2_5, alpha=0.025, version=1, B=0)
 Back_ES_ESR_MSGARCH_LSTM_5_V1 <- esr_backtest(df_msgarch_lstm$Return, df_msgarch_lstm$VaR_MSGARCH_LSTM_5, df_msgarch_lstm$ES_MSGARCH_LSTM_5, alpha=0.05, version=1, B=0)
-
 # GAS-LSTM ----------------------------------------------------------------------------
 sigma2_gas_lstm <- read_csv("DF_PREDS/GAS_LSTM_T101_tst_carlos_1.csv", show_col_types = FALSE) %>%
   pull(Prediction)
@@ -618,7 +610,6 @@ Back_ES_ESR_GAS_LSTM_1_V1 <- esr_backtest(df_gas_lstm$Return, df_gas_lstm$VaR_GA
 Back_ES_ESR_GAS_LSTM_2_V1 <- esr_backtest(df_gas_lstm$Return, df_gas_lstm$VaR_GAS_LSTM_2_5, df_gas_lstm$ES_GAS_LSTM_2_5, alpha=0.025, version=1, B=0)
 Back_ES_ESR_GAS_LSTM_5_V1 <- esr_backtest(df_gas_lstm$Return, df_gas_lstm$VaR_GAS_LSTM_5, df_gas_lstm$ES_GAS_LSTM_5, alpha=0.05, version=1, B=0)
 
-
 # 1%
 ggplot(df_gas_lstm, aes(x = Date)) +
   geom_line(aes(y = Return), color = "black", alpha = 0.6, linewidth = 0.4) +
@@ -642,7 +633,6 @@ ggplot(df_gas_lstm, aes(x = Date)) +
        x = "Data", y = "Retorno") +
   theme_minimal() +
   theme(plot.title = element_text(hjust = 0.5))
-
 # LSTM PURO -----------------------------------------------------------------------------
 sigma2_lstm_puro <- read_csv("DF_PREDS/LSTM_puro_T101_tst_carlos_1.csv", show_col_types = FALSE) %>%
   pull(Prediction)
@@ -1387,3 +1377,4 @@ ggplot(df_long, aes(x = Date)) +
   theme_minimal() +
   theme(plot.title = element_text(hjust = 0.5),
         legend.position = "right")
+
