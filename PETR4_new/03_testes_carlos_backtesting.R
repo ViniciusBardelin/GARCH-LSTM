@@ -11,22 +11,9 @@ library(GAS)
 library(knitr)
 library(kableExtra)
 library(Rcpp)
-NZ_deprecated = function(VaR, ES, r, alpha){
-  D = dim(VaR)
-  if (is.null(D)){
-    k = 1
-    val_ = ((1/(2*sqrt(-ES)))*(ES - VaR + ifelse(r<=VaR,1,0)*(VaR - r)/alpha) + sqrt(-ES))
-  } else {
-    k = D[2]
-    n = D[1]
-    val_ = matrix(0,ncol = k, nrow = n)
-    for (i in 1:k){
-      val_[,i] = ((1/(2*sqrt(-ES[,i])))*(ES[,i] - VaR[,i] + ifelse(r<=VaR[,i],1,0)*(VaR[,i] - r)/alpha) + sqrt(-ES[,i]))
-    }
-  }
-  return(val_)
-}
 source("Function_VaR_VQR.R")
+source("Optimizations.R")
+
 #sourceCpp("scoring_functions.cpp")
 
 # Parâmetros gerais
@@ -88,6 +75,13 @@ Back_VaR_NZ_GARCH_2 <- NZ_deprecated(df_garch$VaR_GARCH_2, df_garch$ES_GARCH_2, 
 Back_VaR_NZ_GARCH_2 <- mean(Back_VaR_NZ_GARCH_2)
 Back_VaR_NZ_GARCH_5 <- NZ_deprecated(df_garch$VaR_GARCH_5, df_garch$ES_GARCH_5, df_garch$Return, 0.05)
 Back_VaR_NZ_GARCH_5 <- mean(Back_VaR_NZ_GARCH_5)
+
+Back_VaR_AL_GARCH_1 <- AL_deprecated(df_garch$VaR_GARCH_1, df_garch$ES_GARCH_1, df_garch$Return, 0.01)
+Back_VaR_AL_GARCH_1 <- mean(Back_VaR_AL_GARCH_1)
+Back_VaR_AL_GARCH_2 <- AL_deprecated(df_garch$VaR_GARCH_2, df_garch$ES_GARCH_2, df_garch$Return, 0.025)
+Back_VaR_AL_GARCH_2 <- mean(Back_VaR_AL_GARCH_2)
+Back_VaR_AL_GARCH_5 <- AL_deprecated(df_garch$VaR_GARCH_5, df_garch$ES_GARCH_5, df_garch$Return, 0.05)
+Back_VaR_AL_GARCH_5 <- mean(Back_VaR_AL_GARCH_5)
 
 df_scores_garch <- data.frame(
   Nível = c("1%", "2.5%", "5%"),
@@ -158,6 +152,13 @@ Back_VaR_NZ_MSGARCH_1 <- mean(NZ_deprecated(df_msgarch$VaR_MSGARCH_1, df_msgarch
 Back_VaR_NZ_MSGARCH_2 <- mean(NZ_deprecated(df_msgarch$VaR_MSGARCH_2, df_msgarch$ES_MSGARCH_2, df_msgarch$Return, 0.025))
 Back_VaR_NZ_MSGARCH_5 <- mean(NZ_deprecated(df_msgarch$VaR_MSGARCH_5, df_msgarch$ES_MSGARCH_5, df_msgarch$Return, 0.05))
 
+Back_VaR_AL_MSGARCH_1 <- AL_deprecated(df_msgarch$VaR_MSGARCH_1, df_msgarch$ES_MSGARCH_1, df_msgarch$Return, 0.01)
+Back_VaR_AL_MSGARCH_1 <- mean(Back_VaR_AL_MSGARCH_1)
+Back_VaR_AL_MSGARCH_2 <- AL_deprecated(df_msgarch$VaR_MSGARCH_2, df_msgarch$ES_MSGARCH_2, df_msgarch$Return, 0.025)
+Back_VaR_AL_MSGARCH_2 <- mean(Back_VaR_AL_MSGARCH_2)
+Back_VaR_AL_MSGARCH_5 <- AL_deprecated(df_msgarch$VaR_MSGARCH_5, df_msgarch$ES_MSGARCH_5, df_msgarch$Return, 0.05)
+Back_VaR_AL_MSGARCH_5 <- mean(Back_VaR_AL_MSGARCH_5)
+
 df_scores_msgarch <- data.frame(
   Nível = c("1%", "2.5%", "5%"),
   QL = c(Back_VaR_QL_MSGARCH_1, Back_VaR_QL_MSGARCH_2, Back_VaR_QL_MSGARCH_5),
@@ -226,6 +227,13 @@ Back_VaR_FZ_GAS_5 <- mean(FZLoss(df_gas$Return, df_gas$VaR_GAS_5, df_gas$ES_GAS_
 Back_VaR_NZ_GAS_1 <- mean(NZ_deprecated(df_gas$VaR_GAS_1, df_gas$ES_GAS_1, df_gas$Return, 0.01))
 Back_VaR_NZ_GAS_2 <- mean(NZ_deprecated(df_gas$VaR_GAS_2, df_gas$ES_GAS_2, df_gas$Return, 0.025))
 Back_VaR_NZ_GAS_5 <- mean(NZ_deprecated(df_gas$VaR_GAS_5, df_gas$ES_GAS_5, df_gas$Return, 0.05))
+
+Back_VaR_AL_GAS_1 <- AL_deprecated(df_gas$VaR_GAS_1, df_gas$ES_GAS_1, df_gas$Return, 0.01)
+Back_VaR_AL_GAS_1 <- mean(Back_VaR_AL_GAS_1)
+Back_VaR_AL_GAS_2 <- AL_deprecated(df_gas$VaR_GAS_2, df_gas$ES_GAS_2, df_gas$Return, 0.025)
+Back_VaR_AL_GAS_2 <- mean(Back_VaR_AL_GAS_2)
+Back_VaR_AL_GAS_5 <- AL_deprecated(df_gas$VaR_GAS_5, df_gas$ES_GAS_5, df_gas$Return, 0.05)
+Back_VaR_AL_GAS_5 <- mean(Back_VaR_AL_GAS_5)
 
 df_scores_gas <- data.frame(
   Nível = c("1%", "2.5%", "5%"),
@@ -333,6 +341,14 @@ Back_VaR_NZ_GARCH_LSTM_1 <- mean(NZ_deprecated(df_garch_lstm$VaR_GARCH_LSTM_1, d
 Back_VaR_NZ_GARCH_LSTM_2 <- mean(NZ_deprecated(df_garch_lstm$VaR_GARCH_LSTM_2_5, df_garch_lstm$ES_GARCH_LSTM_2_5, df_garch_lstm$Return, 0.025))
 Back_VaR_NZ_GARCH_LSTM_5 <- mean(NZ_deprecated(df_garch_lstm$VaR_GARCH_LSTM_5, df_garch_lstm$ES_GARCH_LSTM_5, df_garch_lstm$Return, 0.05))
 
+Back_VaR_AL_GARCH_LSTM_1 <- AL_deprecated(df_garch_lstm$VaR_GARCH_LSTM_1, df_garch_lstm$ES_GARCH_LSTM_1, df_garch_lstm$Return, 0.01)
+Back_VaR_AL_GARCH_LSTM_1 <- mean(Back_VaR_AL_GARCH_LSTM_1)
+Back_VaR_AL_GARCH_LSTM_2 <- AL_deprecated(df_garch_lstm$VaR_GARCH_LSTM_2_5, df_garch_lstm$ES_GARCH_LSTM_2_5, df_garch_lstm$Return, 0.025)
+Back_VaR_AL_GARCH_LSTM_2 <- mean(Back_VaR_AL_GARCH_LSTM_2)
+Back_VaR_AL_GARCH_LSTM_5 <- AL_deprecated(df_garch_lstm$VaR_GARCH_LSTM_5, df_garch_lstm$ES_GARCH_LSTM_5, df_garch_lstm$Return, 0.05)
+Back_VaR_AL_GARCH_LSTM_5 <- mean(Back_VaR_AL_GARCH_LSTM_5)
+
+
 df_scores_garch_lstm <- data.frame(
   Nível = c("1%", "2.5%", "5%"),
   QL = c(Back_VaR_QL_GARCH_LSTM_1, Back_VaR_QL_GARCH_LSTM_2, Back_VaR_QL_GARCH_LSTM_5),
@@ -378,7 +394,6 @@ ggplot(df_garch_lstm, aes(x = Date)) +
        x = "Data", y = "Retorno") +
   theme_minimal() +
   theme(plot.title = element_text(hjust = 0.5))
-
 
 # MSGARCH-LSTM ----------------------------------------------------------------------------
 sigma2_msgarch_lstm <- read_csv("DF_PREDS/MSGARCH_LSTM_T101_tst_carlos_1.csv", show_col_types = FALSE) %>%
@@ -462,6 +477,13 @@ Back_VaR_FZ_MSGARCH_LSTM_5 <- mean(FZLoss(df_msgarch_lstm$Return, df_msgarch_lst
 Back_VaR_NZ_MSGARCH_LSTM_1 <- mean(NZ_deprecated(df_msgarch_lstm$VaR_MSGARCH_LSTM_1, df_msgarch_lstm$ES_MSGARCH_LSTM_1, df_msgarch_lstm$Return, 0.01))
 Back_VaR_NZ_MSGARCH_LSTM_2 <- mean(NZ_deprecated(df_msgarch_lstm$VaR_MSGARCH_LSTM_2_5, df_msgarch_lstm$ES_MSGARCH_LSTM_2_5, df_msgarch_lstm$Return, 0.025))
 Back_VaR_NZ_MSGARCH_LSTM_5 <- mean(NZ_deprecated(df_msgarch_lstm$VaR_MSGARCH_LSTM_5, df_msgarch_lstm$ES_MSGARCH_LSTM_5, df_msgarch_lstm$Return, 0.05))
+
+Back_VaR_AL_MSGARCH_LSTM_1 <- AL_deprecated(df_msgarch_lstm$VaR_MSGARCH_LSTM_1, df_msgarch_lstm$ES_MSGARCH_LSTM_1, df_msgarch_lstm$Return, 0.01)
+Back_VaR_AL_MSGARCH_LSTM_1 <- mean(Back_VaR_AL_MSGARCH_LSTM_1)
+Back_VaR_AL_MSGARCH_LSTM_2 <- AL_deprecated(df_msgarch_lstm$VaR_MSGARCH_LSTM_2_5, df_msgarch_lstm$ES_MSGARCH_LSTM_2_5, df_msgarch_lstm$Return, 0.025)
+Back_VaR_AL_MSGARCH_LSTM_2 <- mean(Back_VaR_AL_MSGARCH_LSTM_2)
+Back_VaR_AL_MSGARCH_LSTM_5 <- AL_deprecated(df_msgarch_lstm$VaR_MSGARCH_LSTM_5, df_msgarch_lstm$ES_MSGARCH_LSTM_5, df_msgarch_lstm$Return, 0.05)
+Back_VaR_AL_MSGARCH_LSTM_5 <- mean(Back_VaR_AL_MSGARCH_LSTM_5)
 
 df_scores_msgarch_lstm <- data.frame(
   Nível = c("1%", "2.5%", "5%"),
@@ -567,6 +589,13 @@ Back_VaR_FZ_GAS_LSTM_5 <- mean(FZLoss(df_gas_lstm$Return, df_gas_lstm$VaR_GAS_LS
 Back_VaR_NZ_GAS_LSTM_1 <- mean(NZ_deprecated(df_gas_lstm$VaR_GAS_LSTM_1, df_gas_lstm$ES_GAS_LSTM_1, df_gas_lstm$Return, 0.01))
 Back_VaR_NZ_GAS_LSTM_2 <- mean(NZ_deprecated(df_gas_lstm$VaR_GAS_LSTM_2_5, df_gas_lstm$ES_GAS_LSTM_2_5, df_gas_lstm$Return, 0.025))
 Back_VaR_NZ_GAS_LSTM_5 <- mean(NZ_deprecated(df_gas_lstm$VaR_GAS_LSTM_5, df_gas_lstm$ES_GAS_LSTM_5, df_gas_lstm$Return, 0.05))
+
+Back_VaR_AL_GAS_LSTM_1 <- AL_deprecated(df_gas_lstm$VaR_GAS_LSTM_1, df_gas_lstm$ES_GAS_LSTM_1, df_gas_lstm$Return, 0.01)
+Back_VaR_AL_GAS_LSTM_1 <- mean(Back_VaR_AL_GAS_LSTM_1)
+Back_VaR_AL_GAS_LSTM_2 <- AL_deprecated(df_gas_lstm$VaR_GAS_LSTM_2_5, df_gas_lstm$ES_GAS_LSTM_2_5, df_gas_lstm$Return, 0.025)
+Back_VaR_AL_GAS_LSTM_2 <- mean(Back_VaR_AL_GAS_LSTM_2)
+Back_VaR_AL_GAS_LSTM_5 <- AL_deprecated(df_gas_lstm$VaR_GAS_LSTM_5, df_gas_lstm$ES_GAS_LSTM_5, df_gas_lstm$Return, 0.05)
+Back_VaR_AL_GAS_LSTM_5 <- mean(Back_VaR_AL_GAS_LSTM_5)
 
 df_scores_gas_lstm <- data.frame(
   Nível = c("1%", "2.5%", "5%"),
@@ -697,6 +726,13 @@ Back_VaR_NZ_LSTM_PURO_1 <- mean(NZ_deprecated(df_lstm_puro$VaR_LSTM_PURO_1, df_l
 Back_VaR_NZ_LSTM_PURO_2 <- mean(NZ_deprecated(df_lstm_puro$VaR_LSTM_PURO_2_5, df_lstm_puro$ES_LSTM_PURO_2_5, df_lstm_puro$Return, 0.025))
 Back_VaR_NZ_LSTM_PURO_5 <- mean(NZ_deprecated(df_lstm_puro$VaR_LSTM_PURO_5, df_lstm_puro$ES_LSTM_PURO_5, df_lstm_puro$Return, 0.05))
 
+Back_VaR_AL_LSTM_PURO_1 <- AL_deprecated(df_lstm_puro$VaR_LSTM_PURO_1, df_lstm_puro$ES_LSTM_PURO_1, df_lstm_puro$Return, 0.01)
+Back_VaR_AL_LSTM_PURO_1 <- mean(Back_VaR_AL_LSTM_PURO_1)
+Back_VaR_AL_LSTM_PURO_2 <- AL_deprecated(df_lstm_puro$VaR_LSTM_PURO_2_5, df_lstm_puro$ES_LSTM_PURO_2_5, df_lstm_puro$Return, 0.025)
+Back_VaR_AL_LSTM_PURO_2 <- mean(Back_VaR_AL_LSTM_PURO_2)
+Back_VaR_AL_LSTM_PURO_5 <- AL_deprecated(df_lstm_puro$VaR_LSTM_PURO_5, df_lstm_puro$ES_LSTM_PURO_5, df_lstm_puro$Return, 0.05)
+Back_VaR_AL_LSTM_PURO_5 <- mean(Back_VaR_AL_LSTM_PURO_5)
+
 df_scores_lstm_puro <- data.frame(
   Nível = c("1%", "2.5%", "5%"),
   QL = c(Back_VaR_QL_LSTM_PURO_1, Back_VaR_QL_LSTM_PURO_2, Back_VaR_QL_LSTM_PURO_5),
@@ -721,6 +757,193 @@ Back_ES_ESR_LSTM_PURO_5_V1 <- esr_backtest(df_lstm_puro$Return, df_lstm_puro$VaR
 
 
 # Gráficos
+
+
+# ARFIMA -------------------------------
+
+# usa log-parkinson
+sigma2_arfima <- read_csv("df_arfima.csv", show_col_types = FALSE) %>%
+  pull(Sigma2_ARFIMA)
+
+#res_arfima <- read_csv("df_arfima_insample.csv", show_col_types = FALSE) %>%
+  pull(Residuals) 
+
+res_arfima <- df_arfima_insample_logpks %>%
+  select(Residuals)
+
+returns <- read_csv("sigma2_ajustado_e_previsto_completo.csv", show_col_types = FALSE) %>%
+  pull(Returns)
+
+returns_ins <- returns[1:1500]
+#sigma2_ajustada <- read.csv("df_arfima_insample.csv")$Sigma2_ARFIMA_ajustado
+sigma2_ajustada <- df_arfima_insample_logpks %>%
+  select(Sigma2_ARFIMA_ajustado_exp)
+
+sigma_ajustada <- sqrt(sigma2_ajustada)
+resid_arfima_manual <- returns_ins / sigma_ajustada
+
+q_1 <- quantile(res_arfima, 0.01, na.rm = TRUE)
+q_2 <- quantile(res_arfima, 0.025, na.rm = TRUE)
+q_5 <- quantile(res_arfima, 0.05, na.rm = TRUE)
+
+VaR_ARFIMA_1 <- VaR_ARFIMA_2 <- VaR_ARFIMA_5 <- numeric(n_oos)
+ES_ARFIMA_1  <- ES_ARFIMA_2  <- ES_ARFIMA_5  <- numeric(n_oos)
+r_oos <- numeric(n_oos)
+
+for (i in 1:n_oos) {
+  returns_window <- returns[i:(i + n_ins - 1)]
+  mu <- mean(returns_window)
+  
+  sigma2_t <- sigma2_arfima[i]
+  sigma_t <- sqrt(sigma2_t)
+  
+  # VaR
+  VaR_ARFIMA_1[i] <- mu + sigma_t * q_1
+  VaR_ARFIMA_2[i] <- mu + sigma_t * q_2
+  VaR_ARFIMA_5[i] <- mu + sigma_t * q_5
+  
+  # ES
+  ES_ARFIMA_1[i] <- mean(returns_window[returns_window < VaR_ARFIMA_1[i]])
+  ES_ARFIMA_2[i] <- mean(returns_window[returns_window < VaR_ARFIMA_2[i]])
+  ES_ARFIMA_5[i] <- mean(returns_window[returns_window < VaR_ARFIMA_5[i]])
+  
+  r_oos[i] <- returns[i + n_ins]
+}
+
+df_arfima_final <- tibble(
+  Date = df$Date[(n_ins + 1):(n_ins + n_oos)],
+  Return = r_oos,
+  VaR_ARFIMA_1 = VaR_ARFIMA_1,
+  ES_ARFIMA_1 = ES_ARFIMA_1,
+  VaR_ARFIMA_2_5 = VaR_ARFIMA_2,
+  ES_ARFIMA_2_5 = ES_ARFIMA_2,
+  VaR_ARFIMA_5 = VaR_ARFIMA_5,
+  ES_ARFIMA_5 = ES_ARFIMA_5
+) %>%
+  mutate(
+    Exceed_VaR_ARFIMA_1 = Return < VaR_ARFIMA_1,
+    Exceed_VaR_ARFIMA_2 = Return < VaR_ARFIMA_2_5,
+    Exceed_VaR_ARFIMA_5 = Return < VaR_ARFIMA_5
+  ) 
+
+table(df_arfima_final$Exceed_VaR_ARFIMA_1)
+table(df_arfima_final$Exceed_VaR_ARFIMA_2)
+table(df_arfima_final$Exceed_VaR_ARFIMA_5)
+
+
+
+
+# sem usar log-parkinson
+sigma2_arfima <- read_csv("df_arfima_oos.csv", show_col_types = FALSE) %>%
+  pull(Sigma2_ARFIMA)
+
+res_arfima <- read_csv("df_arfima_insample_pkscru.csv", show_col_types = FALSE) %>%
+  pull(Residuals) 
+
+returns <- read_csv("sigma2_ajustado_e_previsto_completo.csv", show_col_types = FALSE) %>%
+  pull(Returns)
+
+returns_ins <- returns[1:1500]
+sigma2_ajustada <- read.csv("df_arfima_insample_pkscru.csv")$Sigma2_ARFIMA_ajustado
+sigma_ajustada <- sqrt(sigma2_ajustada)
+resid_arfima_manual <- returns_ins / sigma_ajustada
+
+
+summary(fitted_arfima_pkscru)
+sum(is.na(fitted_arfima_pkscru))
+sum(fitted_arfima_pkscru <= 0)
+
+
+q_1 <- quantile(res_arfima, 0.01, na.rm = TRUE)
+q_2 <- quantile(res_arfima, 0.025, na.rm = TRUE)
+q_5 <- quantile(res_arfima, 0.05, na.rm = TRUE)
+
+VaR_ARFIMA_1 <- VaR_ARFIMA_2 <- VaR_ARFIMA_5 <- numeric(n_oos)
+ES_ARFIMA_1  <- ES_ARFIMA_2  <- ES_ARFIMA_5  <- numeric(n_oos)
+r_oos <- numeric(n_oos)
+
+for (i in 1:n_oos) {
+  returns_window <- returns[i:(i + n_ins - 1)]
+  mu <- mean(returns_window)
+  
+  sigma2_t <- sigma2_arfima[i]
+  sigma_t <- sqrt(sigma2_t)
+  
+  # VaR
+  VaR_ARFIMA_1[i] <- mu + sigma_t * q_1
+  VaR_ARFIMA_2[i] <- mu + sigma_t * q_2
+  VaR_ARFIMA_5[i] <- mu + sigma_t * q_5
+  
+  # ES
+  ES_ARFIMA_1[i] <- mean(returns_window[returns_window < VaR_ARFIMA_1[i]])
+  ES_ARFIMA_2[i] <- mean(returns_window[returns_window < VaR_ARFIMA_2[i]])
+  ES_ARFIMA_5[i] <- mean(returns_window[returns_window < VaR_ARFIMA_5[i]])
+  
+  r_oos[i] <- returns[i + n_ins]
+}
+
+df_arfima_final <- tibble(
+  Date = df$Date[(n_ins + 1):(n_ins + n_oos)],
+  Return = r_oos,
+  VaR_ARFIMA_1 = VaR_ARFIMA_1,
+  ES_ARFIMA_1 = ES_ARFIMA_1,
+  VaR_ARFIMA_2_5 = VaR_ARFIMA_2,
+  ES_ARFIMA_2_5 = ES_ARFIMA_2,
+  VaR_ARFIMA_5 = VaR_ARFIMA_5,
+  ES_ARFIMA_5 = ES_ARFIMA_5
+) %>%
+  mutate(
+    Exceed_VaR_ARFIMA_1 = Return < VaR_ARFIMA_1,
+    Exceed_VaR_ARFIMA_2 = Return < VaR_ARFIMA_2_5,
+    Exceed_VaR_ARFIMA_5 = Return < VaR_ARFIMA_5
+  ) 
+
+table(df_arfima_final$Exceed_VaR_ARFIMA_1)
+table(df_arfima_final$Exceed_VaR_ARFIMA_2)
+table(df_arfima_final$Exceed_VaR_ARFIMA_5)
+
+
+# Scoring functions ----------------------------------------------------------------
+model_names <- c("GARCH", "MSGARCH", "GAS", "LSTM", "GARCH-LSTM", "MSGARCH-LSTM", "GAS-LSTM")
+
+df_list <- list(
+  df_scores_garch,
+  df_scores_msgarch,
+  df_scores_gas,
+  df_scores_lstm_puro,
+  df_scores_garch_lstm,
+  df_scores_msgarch_lstm,
+  df_scores_gas_lstm
+)
+
+df_scores_all <- bind_rows(
+  lapply(seq_along(df_list), function(i) {
+    df_list[[i]] %>%
+      mutate(Modelo = model_names[i])
+  })
+)
+
+df_scores_all <- df_scores_all %>%
+  select(Nível, Modelo, QL, FZ, NZ)
+
+df_scores_all$Modelo <- factor(df_scores_all$Modelo, levels = model_names)
+df_scores_all$Nível <- factor(df_scores_all$Nível, levels = c("1%", "2.5%", "5%"))
+df_scores_all <- arrange(df_scores_all, Nível, Modelo)
+
+tabela_nivel <- function(nivel) {
+  df_scores_all %>%
+    filter(Nível == nivel) %>%
+    select(-Nível) %>%
+    kbl(format = "latex", booktabs = TRUE, digits = 4,
+        col.names = c("Modelo", "QL", "FZ", "NZ"),
+        caption = paste("Scoring functions para nível de", nivel)) %>%
+    kable_styling(latex_options = c("hold_position"), position = "center")
+}
+
+tabela_nivel("1%")
+tabela_nivel("2.5%")
+tabela_nivel("5%")
+
 
 # GARCH  -----------------------------------------------------------
 # 1%
