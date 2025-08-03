@@ -153,11 +153,11 @@ sigma2_completo <- matrix(NA, nrow = n_total, ncol = 1)
 colnames(sigma2_completo) <- "ARFIMA1"
 
 # Ins
-log_pks_ins <- df$Log_Parkinson[1:1500]
-log_pks_ins_c <- scale(log_pks_ins, scale = FALSE)
+log_pks <- df$Log_Parkinson[1:1500]
+log_pks_c <- scale(log_pks, scale = FALSE)
 mu <- attr(log_pks_c, "scaled:center") 
 
-fit_0d1 <- try(arfima(log_pks_ins_c, order = c(0, 0, 1), back = TRUE), silent = TRUE)
+fit_0d1 <- try(arfima(log_pks_c, order = c(0, 0, 1), back = TRUE), silent = TRUE)
 
 resid_arfima <- resid(fit_0d1)
 resid_arfima <- resid_arfima$Mode1
