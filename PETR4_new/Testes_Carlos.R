@@ -25,14 +25,12 @@ gas_spec <- UniGASSpec(Dist = "std", ScalingType = "Identity", GASPar = list(sca
 sigma2_completo <- matrix(NA_real_, nrow = n_tot, ncol = 3,
                           dimnames = list(NULL, c("GARCH", "MSGARCH", "GAS")))
 
-# Ajuste único nos n_ins primeiros dados centrados
 returns_c <- scale(returns[1:n_ins], scale = FALSE)
 
 fit_GARCH <- ugarchfit(garch_spec, returns_c, solver = "hybrid")
 fit_GAS <- UniGASFit(gas_spec, returns_c, Compute.SE = FALSE)
 fit_MSGARCH <- FitML(msgarch_spec, returns_c, ctr = list(do.se = FALSE))
 
-# Valores ajustados (sigma²) nas primeiras n_ins posições
 sigma2_completo[1:n_ins, "GARCH"] <- sigma(fit_GARCH)^2
 sigma2_completo[1:n_ins, "GAS"] <- fit_GAS@GASDyn$mTheta[2, 1:n_ins] * fit_GAS@GASDyn$mTheta[3, 1] / (fit_GAS@GASDyn$mTheta[3, 1] - 2)
 sigma2_completo[1:n_ins, "MSGARCH"] <- Volatility(fit_MSGARCH)^2
@@ -50,17 +48,14 @@ for (i in 1:n_oos) {
   fit_GAS <- UniGASFit(gas_spec, returns_c, Compute.SE = FALSE)
   fit_MSGARCH <- FitML(msgarch_spec , returns_c, ctr = list(do.se = FALSE))
   
-  # One-step-ahead Volatility**2 (variancia)
   sigma2[i, "GARCH"] <- ugarchforecast(fit_GARCH, n.ahead = 1)@forecast$sigmaFor[1]^2
   sigma2[i, "MSGARCH"] <- predict(fit_MSGARCH , nahead = 1)$vol^2
   sigma2[i, "GAS"] <- UniGASFor(fit_GAS, H = 1)@Forecast$PointForecast[, 2] * fit_GAS@GASDyn$mTheta[3, 1] /(fit_GAS@GASDyn$mTheta[3, 1] - 2)
     
-  # Guardar valores ajustados na matriz completa
   sigma2_completo[i + n_ins, "GARCH"] <- sigma(fit_GARCH)[n_ins]^2
   sigma2_completo[i + n_ins, "GAS"] <- fit_GAS@GASDyn$mTheta[2, n_ins] * fit_GAS@GASDyn$mTheta[3, 1] / (fit_GAS@GASDyn$mTheta[3, 1] - 2)
   sigma2_completo[i + n_ins, "MSGARCH"] <- Volatility(fit_MSGARCH)[n_ins]^2
   
-  # Residuals
   res_GARCH <- as.numeric(returns_c/sigma(fit_GARCH))
   res_GAS <-   as.numeric(returns_c/sqrt(fit_GAS@GASDyn$mTheta[2, 1:n_ins] * fit_GAS@GASDyn$mTheta[3, 1] /(fit_GAS@GASDyn$mTheta[3, 1] - 2)))
   res_MSGARCH <- as.numeric(returns_c/ Volatility(fit_MSGARCH))
