@@ -25,12 +25,14 @@ gas_spec <- UniGASSpec(Dist = "std", ScalingType = "Identity", GASPar = list(sca
 sigma2_completo <- matrix(NA_real_, nrow = n_tot, ncol = 3,
                           dimnames = list(NULL, c("GARCH", "MSGARCH", "GAS")))
 
+# Ajuste único nos n_ins primeiros dados centrados
 returns_c <- scale(returns[1:n_ins], scale = FALSE)
 
 fit_GARCH <- ugarchfit(garch_spec, returns_c, solver = "hybrid")
 fit_GAS <- UniGASFit(gas_spec, returns_c, Compute.SE = FALSE)
 fit_MSGARCH <- FitML(msgarch_spec, returns_c, ctr = list(do.se = FALSE))
 
+# Valores ajustados (sigma²) nas primeiras n_ins posições
 sigma2_completo[1:n_ins, "GARCH"] <- sigma(fit_GARCH)^2
 sigma2_completo[1:n_ins, "GAS"] <- fit_GAS@GASDyn$mTheta[2, 1:n_ins] * fit_GAS@GASDyn$mTheta[3, 1] / (fit_GAS@GASDyn$mTheta[3, 1] - 2)
 sigma2_completo[1:n_ins, "MSGARCH"] <- Volatility(fit_MSGARCH)^2
@@ -48,14 +50,17 @@ for (i in 1:n_oos) {
   fit_GAS <- UniGASFit(gas_spec, returns_c, Compute.SE = FALSE)
   fit_MSGARCH <- FitML(msgarch_spec , returns_c, ctr = list(do.se = FALSE))
   
+  # One-step-ahead Volatility**2 (variancia)
   sigma2[i, "GARCH"] <- ugarchforecast(fit_GARCH, n.ahead = 1)@forecast$sigmaFor[1]^2
   sigma2[i, "MSGARCH"] <- predict(fit_MSGARCH , nahead = 1)$vol^2
   sigma2[i, "GAS"] <- UniGASFor(fit_GAS, H = 1)@Forecast$PointForecast[, 2] * fit_GAS@GASDyn$mTheta[3, 1] /(fit_GAS@GASDyn$mTheta[3, 1] - 2)
     
+  # Guardar valores ajustados na matriz completa
   sigma2_completo[i + n_ins, "GARCH"] <- sigma(fit_GARCH)[n_ins]^2
   sigma2_completo[i + n_ins, "GAS"] <- fit_GAS@GASDyn$mTheta[2, n_ins] * fit_GAS@GASDyn$mTheta[3, 1] / (fit_GAS@GASDyn$mTheta[3, 1] - 2)
   sigma2_completo[i + n_ins, "MSGARCH"] <- Volatility(fit_MSGARCH)[n_ins]^2
   
+  # Residuals
   res_GARCH <- as.numeric(returns_c/sigma(fit_GARCH))
   res_GAS <-   as.numeric(returns_c/sqrt(fit_GAS@GASDyn$mTheta[2, 1:n_ins] * fit_GAS@GASDyn$mTheta[3, 1] /(fit_GAS@GASDyn$mTheta[3, 1] - 2)))
   res_MSGARCH <- as.numeric(returns_c/ Volatility(fit_MSGARCH))
@@ -203,3 +208,70 @@ df_arfima_oos <- tibble(
 )
 
 write.csv(df_arfima_oos, "df_arfima_oos_pks_2.csv", row.names = FALSE)
+
+# FIGARCH 
+df_figarch = read.csv("sigma2_ajustado_e_previsto_completo.csv")
+
+returns_insample <- df_figarch$Returns[1:1500]
+
+sigma2_figarch <- matrix(NA, nrow = n_oos, ncol = 1)
+colnames(sigma2_figarch) <- "FIGARCH"
+
+sigma2_completo_figarch <- matrix(NA, nrow = n_tot, ncol = 1)
+colnames(sigma2_completo_figarch) <- "FIGARCH"
+
+# InS
+fit_figarch_ins <- figarch(returns_insample, orders = c(1,1), cond_dist = "std",
+                           drange = c(0, 1))
+
+
+#pred <- predict(fit_figarch_ins, n.ahead = 1)
+
+#pred@sigt^2
+
+res_figarch <- fit_figarch_ins@etat
+fitted_figarch <- fit_figarch_ins@sigt^2
+
+df_figarch_insample <- data.frame(
+  Date = df$Date[1:n_ins],
+  Sigma2_FIGARCH_ajustado = fitted_figarch,
+  Residuals = res_figarch
+)
+
+write.csv(df_figarch_insample, "df_figarch_insample.csv", row.names = FALSE)
+
+# OoS
+returns_oos <- df_figarch$Returns
+sigma2_figarch <- data.frame(FIGARCH = rep(NA_real_, n_oos))  # <- era ARFIMA
+
+for (i in 1:n_oos) {
+  cat("Iteração:", i, "\n")
+  
+  returns_window <- returns_oos[i:(i + n_ins - 1)]
+  
+  fit_best <- try(
+    figarch(returns_window, orders = c(1,1), cond_dist = "std", drange = c(0, 1)),
+    silent = TRUE
+  )
+  
+  if (!inherits(fit_best, "try-error")) {
+    pred <- predict(fit_best, n.ahead = 1)
+    rts_hat <- as.numeric(pred@sigt[1]^2)  # <- indexa o 1º passo e só então ao quadrado
+    sigma2_figarch[i, "FIGARCH"] <- rts_hat 
+    # pred <- arfimaforecast(fit_best, n.ahead = 1)
+    # pks_hat <- as.numeric(pred@forecast$seriesFor[1])
+    # sigma2_pks[i, "ARFIMA"] <- pks_hat
+  } else {
+    warning(paste("Erro de ajuste na iteração", i))
+  }
+}
+
+df_figarch_oos <- tibble(
+  Date = df$Date[(n_ins + 1):(n_ins + n_oos)],
+  Parkinson = df$Parkinson[(n_ins + 1):(n_ins + n_oos)],
+  Sigma2_FIGARCH = sigma2_figarch[, "FIGARCH"]
+)
+
+write.csv(df_figarch_oos, "df_figarch_oos.csv", row.names = FALSE)
+
+plot(df_figarch_oos$Sigma2_FIGARCH, type = 'l')
